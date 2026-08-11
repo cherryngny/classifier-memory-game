@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cantonese Classifier Memory Game - 量詞配對翻牌遊戲</title>
+  <title>Cantonese Classifier Memory Game - SLP Edition</title>
   <style>
     :root {
       --primary: #4A90E2;
-      --secondary: #50E3C2;
+      --secondary: #2ECC71;
+      --accent: #E74C3C;
       --bg: #F0F4F8;
       --card-bg: #FFFFFF;
       --card-back: #357ABD;
@@ -19,25 +20,28 @@
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 20px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     h1 {
+      margin-top: 5px;
       margin-bottom: 10px;
       color: var(--primary);
+      text-align: center;
     }
 
-    .setup-panel {
+    .setup-panel, .tracker-panel {
       background: white;
-      padding: 20px;
+      padding: 18px;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
       margin-bottom: 20px;
+      box-sizing: border-box;
     }
 
     .form-group {
@@ -53,7 +57,7 @@
     .checkbox-group {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
 
     .checkbox-btn {
@@ -68,9 +72,7 @@
       font-size: 1.1rem;
     }
 
-    .checkbox-btn input {
-      display: none;
-    }
+    .checkbox-btn input { display: none; }
 
     .checkbox-btn.selected {
       background: var(--primary);
@@ -95,16 +97,16 @@
       transition: background 0.2s;
     }
 
-    button:hover {
-      background: #357ABD;
-    }
+    button:hover { background: #357ABD; }
 
+    /* Board Layout */
     .game-board {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 10px;
       max-width: 600px;
       width: 100%;
+      margin-bottom: 20px;
     }
 
     .card {
@@ -124,9 +126,7 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
-    .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
 
     .card-front, .card-back {
       position: absolute;
@@ -138,13 +138,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-sizing: border-radius;
+      box-sizing: border-box;
+      padding: 6px;
     }
 
     .card-back {
       background: var(--card-back);
       color: white;
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: bold;
     }
 
@@ -154,36 +155,121 @@
       border: 2px solid var(--primary);
     }
 
-    .card-emoji {
-      font-size: 2.2rem;
+    .card-img {
+      width: 85%;
+      height: 85%;
+      object-fit: contain;
+      border-radius: 6px;
     }
 
-    .card-text {
-      font-size: 1.1rem;
-      font-weight: bold;
-      margin-top: 4px;
+    /* Blink Animation when cards match */
+    @keyframes blink-success {
+      0% { opacity: 1; transform: scale(1); }
+      25% { opacity: 0.3; transform: scale(1.05); }
+      50% { opacity: 1; transform: scale(1.05); }
+      75% { opacity: 0.3; transform: scale(1.05); }
+      100% { opacity: 0.5; transform: scale(1); }
+    }
+
+    .card.blinking .card-inner {
+      animation: blink-success 0.8s ease-in-out forwards;
+      border: 3px solid var(--secondary);
     }
 
     .card.matched .card-inner {
-      opacity: 0.6;
+      opacity: 0.5;
+      border: 2px solid var(--secondary);
+    }
+
+    /* SLP Tracker Panel */
+    .tracker-panel {
+      border: 2px solid var(--primary);
+      background: #F8FAFC;
+    }
+
+    .tracker-panel h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: var(--primary);
+      border-bottom: 2px solid #E2E8F0;
+      padding-bottom: 6px;
+    }
+
+    .tracker-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+
+    .tracker-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
+    }
+
+    .tracker-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tracker-thumb {
+      width: 32px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .track-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 1.1rem;
+      border-radius: 6px;
+      border: 1px solid #CCC;
+      background: #EDF2F7;
+      color: #4A5568;
+    }
+
+    .track-btn.correct.active {
+      background: var(--secondary);
+      color: white;
       border-color: var(--secondary);
     }
 
-    .status {
-      margin-top: 15px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #27AE60;
+    .track-btn.incorrect.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
     }
 
-    .hidden {
-      display: none !important;
+    .summary-box {
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      border: 1px dashed var(--primary);
     }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <h1>量詞配對翻牌遊戲</h1>
+  <h1>量詞配對翻牌遊戲 (SLP Special)</h1>
 
   <!-- Setup Panel -->
   <div id="setup-panel" class="setup-panel">
@@ -213,26 +299,120 @@
     <button id="start-btn">開始遊戲 Start Game</button>
   </div>
 
-  <!-- Game Controls & Status -->
-  <div id="game-controls" class="hidden">
-    <button id="reset-btn" style="width: auto; padding: 8px 20px; margin-bottom: 15px;">重新開始 Reset</button>
-    <div id="status" class="status"></div>
+  <!-- Game Controls -->
+  <div id="game-controls" class="hidden" style="width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <button id="reset-btn" style="width: auto; padding: 8px 16px;">← 返回設定 Setup</button>
+    <div id="status" style="font-weight: bold; color: var(--secondary);"></div>
   </div>
 
-  <!-- Board -->
+  <!-- Game Board -->
   <div id="game-board" class="game-board hidden"></div>
 
+  <!-- Performance Tracker Panel -->
+  <div id="tracker-panel" class="tracker-panel hidden">
+    <h2>📊 言語治療師紀錄面板 (Data Tracker)</h2>
+    <div class="tracker-list" id="tracker-list"></div>
+    <div class="summary-box" id="summary-box">總正確率：尚未紀錄</div>
+  </div>
+
   <script>
-    // Database of items mapped to classifiers
     const itemsDatabase = {
-      '個': [{ name: '蘋果', emoji: '🍎' }, { name: '橙', emoji: '🍊' }, { name: '氣球', emoji: '🎈' }],
-      '條': [{ name: '魚', emoji: '🐟' }, { name: '香蕉', emoji: '🍌' }, { name: '褲', emoji: '👖' }],
-      '件': [{ name: '衫', emoji: '👕' }, { name: '外套', emoji: '🧥' }, { name: '禮物', emoji: '🎁' }],
-      '隻': [{ name: '狗', emoji: '🐶' }, { name: '貓', emoji: '🐱' }, { name: '鴨', emoji: '🦆' }],
-      '粒': [{ name: '糖', emoji: '🍬' }, { name: '提子', emoji: '🍇' }, { name: '草莓', emoji: '🍓' }],
-      '架': [{ name: '車', emoji: '🚗' }, { name: '飛機', emoji: '✈️' }, { name: '單車', emoji: '🚲' }],
-      '張': [{ name: '紙', emoji: '📄' }, { name: '椅', emoji: '🪑' }, { name: '床', emoji: '🛏️' }],
-      '塊': [{ name: '餅乾', emoji: '🍪' }, { name: '西瓜', emoji: '🍉' }, { name: '蛋糕', emoji: '🍰' }]
+      '個': [
+        { name: '蘋果', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=200' },
+        { name: '橙', img: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=200' },
+        { name: '氣球', img: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200' },
+        { name: '書包', img: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200' },
+        { name: '皮球', img: 'https://images.unsplash.com/photo-1614632537190-23e4146777db?w=200' },
+        { name: '波蘿', img: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=200' },
+        { name: '麵包', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200' },
+        { name: '漢堡包', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200' },
+        { name: '柚子', img: 'https://images.unsplash.com/photo-1580052614034-c55d20bfee3b?w=200' },
+        { name: '洋娃娃', img: 'https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=200' }
+      ],
+      '條': [
+        { name: '魚', img: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=200' },
+        { name: '香蕉', img: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=200' },
+        { name: '褲', img: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=200' },
+        { name: '毛巾', img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=200' },
+        { name: '繩子', img: 'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=200' },
+        { name: '圍巾', img: 'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=200' },
+        { name: '蛇', img: 'https://images.unsplash.com/photo-1531386151447-fd76ad50012f?w=200' },
+        { name: '胡蘿蔔', img: 'https://images.unsplash.com/photo-1598170845058-12ef4a457939?w=200' },
+        { name: '河川', img: 'https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?w=200' },
+        { name: '彩虹', img: 'https://images.unsplash.com/photo-1508624217791-5d07012574e4?w=200' }
+      ],
+      '件': [
+        { name: '衫', img: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200' },
+        { name: '外套', img: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200' },
+        { name: '睡衣', img: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=200' },
+        { name: '泳衣', img: 'https://images.unsplash.com/photo-1576426863848-c21f53c60b19?w=200' },
+        { name: '雨衣', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200' },
+        { name: '背心', img: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=200' },
+        { name: '裙子', img: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=200' },
+        { name: '毛衣', img: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200' },
+        { name: '圍裙', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=200' },
+        { name: '雨傘', img: 'https://images.unsplash.com/photo-1517479149777-5f3b6571d546?w=200' }
+      ],
+      '隻': [
+        { name: '狗', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200' },
+        { name: '貓', img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200' },
+        { name: '鴨', img: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=200' },
+        { name: '鳥', img: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=200' },
+        { name: '兔子', img: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200' },
+        { name: '大象', img: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=200' },
+        { name: '老虎', img: 'https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=200' },
+        { name: '熊熊', img: 'https://images.unsplash.com/photo-1551085254-e96b210df58a?w=200' },
+        { name: '猴子', img: 'https://images.unsplash.com/photo-1540573133985-758588170390?w=200' },
+        { name: '長頸鹿', img: 'https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=200' }
+      ],
+      '粒': [
+        { name: '糖', img: 'https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?w=200' },
+        { name: '提子', img: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=200' },
+        { name: '草莓', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=200' },
+        { name: '花生', img: 'https://images.unsplash.com/photo-1567892568665-1723f5b72e0b?w=200' },
+        { name: '米粒', img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200' },
+        { name: '玉米', img: 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=200' },
+        { name: '豆', img: 'https://images.unsplash.com/photo-1551462147-ff29053bfc14?w=200' },
+        { name: '藥丸', img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200' },
+        { name: '藍莓', img: 'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=200' },
+        { name: '櫻桃', img: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?w=200' }
+      ],
+      '架': [
+        { name: '車', img: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=200' },
+        { name: '飛機', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=200' },
+        { name: '單車', img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=200' },
+        { name: '巴士', img: 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=200' },
+        { name: '的士', img: 'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?w=200' },
+        { name: '直升機', img: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?w=200' },
+        { name: '消防車', img: 'https://images.unsplash.com/photo-1558611848-73f7eb4001a1?w=200' },
+        { name: '救護車', img: 'https://images.unsplash.com/photo-1587745416684-47953f16f02f?w=200' },
+        { name: '摩托車', img: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=200' },
+        { name: '電車', img: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=200' }
+      ],
+      '張': [
+        { name: '紙', img: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=200' },
+        { name: '椅', img: 'https://images.unsplash.com/photo-1503602642458-232111445657?w=200' },
+        { name: '床', img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=200' },
+        { name: '桌子', img: 'https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?w=200' },
+        { name: '相片', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200' },
+        { name: '卡片', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=200' },
+        { name: '地圖', img: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=200' },
+        { name: '貼紙', img: 'https://images.unsplash.com/photo-1572375992501-4b0892d50c69?w=200' },
+        { name: '沙發', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200' },
+        { name: '畫像', img: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200' }
+      ],
+      '塊': [
+        { name: '餅乾', img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=200' },
+        { name: '巧克力', img: 'https://images.unsplash.com/photo-1511381939415-e44015466834?w=200' },
+        { name: '鏡子', img: 'https://images.unsplash.com/photo-1618220179428-22790b461013?w=200' },
+        { name: '布', img: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200' },
+        { name: '披薩', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200' },
+        { name: '海綿', img: 'https://images.unsplash.com/photo-1584305574647-0cc949a2bb9f?w=200' },
+        { name: '瓦片', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=200' },
+        { name: '豆腐', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200' },
+        { name: '地毯', img: 'https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=200' },
+        { name: '拼圖', img: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200' }
+      ]
     };
 
     let selectedClassifiers = [];
@@ -240,17 +420,19 @@
     let matchedPairsCount = 0;
     let totalPairs = 0;
     let isBoardLocked = false;
+    let trackedResults = {};
 
-    // UI elements
     const setupPanel = document.getElementById('setup-panel');
     const gameBoard = document.getElementById('game-board');
     const gameControls = document.getElementById('game-controls');
+    const trackerPanel = document.getElementById('tracker-panel');
+    const trackerList = document.getElementById('tracker-list');
+    const summaryBox = document.getElementById('summary-box');
     const statusText = document.getElementById('status');
     const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
     const classifierBoxes = document.querySelectorAll('#classifier-options input');
 
-    // Toggle button selection styling
     classifierBoxes.forEach(box => {
       box.addEventListener('change', (e) => {
         const parent = e.target.parentElement;
@@ -263,11 +445,11 @@
     resetBtn.addEventListener('click', () => {
       gameBoard.classList.add('hidden');
       gameControls.classList.add('hidden');
+      trackerPanel.classList.add('hidden');
       setupPanel.classList.remove('hidden');
     });
 
     function startGame() {
-      // Get selected classifiers
       selectedClassifiers = Array.from(classifierBoxes)
         .filter(cb => cb.checked)
         .map(cb => cb.value);
@@ -280,34 +462,47 @@
       const cardCount = parseInt(document.getElementById('card-count').value);
       totalPairs = cardCount / 2;
 
-      // Generate card pool
-      const pool = [];
-      let currentIdx = 0;
-      
-      while (pool.length < totalPairs) {
-        const classifier = selectedClassifiers[currentIdx % selectedClassifiers.length];
-        const possibleItems = itemsDatabase[classifier];
-        const randomItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
-        
-        pool.push({
-          classifier: classifier,
-          name: randomItem.name,
-          emoji: randomItem.emoji,
-          fullText: `一${classifier}${randomItem.name}`
-        });
-        currentIdx++;
+      const chosenPool = [];
+      let currentClassifierIdx = 0;
+
+      const tempDatabase = {};
+      selectedClassifiers.forEach(c => {
+        tempDatabase[c] = [...itemsDatabase[c]];
+      });
+
+      while (chosenPool.length < totalPairs) {
+        const classifier = selectedClassifiers[currentClassifierIdx % selectedClassifiers.length];
+        const items = tempDatabase[classifier];
+
+        if (items.length > 0) {
+          const randomIdx = Math.floor(Math.random() * items.length);
+          const pickedItem = items.splice(randomIdx, 1)[0];
+          
+          chosenPool.push({
+            classifier: classifier,
+            name: pickedItem.name,
+            img: pickedItem.img,
+            fullText: `一${classifier}${pickedItem.name}`
+          });
+        }
+        currentClassifierIdx++;
       }
 
-      // Duplicate to create pairs and shuffle
-      let cardsData = [...pool, ...pool].map((item, index) => ({ ...item, id: index }));
+      let cardsData = [...chosenPool, ...chosenPool].map((item, index) => ({ ...item, id: index }));
       cardsData = shuffle(cardsData);
 
-      // Render Board
+      trackedResults = {};
+      chosenPool.forEach(item => {
+        trackedResults[item.fullText] = { classifier: item.classifier, status: null };
+      });
+
       renderBoard(cardsData);
+      renderTracker(chosenPool);
 
       setupPanel.classList.add('hidden');
       gameControls.classList.remove('hidden');
       gameBoard.classList.remove('hidden');
+      trackerPanel.classList.remove('hidden');
       statusText.textContent = '';
       matchedPairsCount = 0;
       flippedCards = [];
@@ -328,14 +523,12 @@
         const cardElem = document.createElement('div');
         cardElem.classList.add('card');
         cardElem.dataset.fullText = card.fullText;
-        cardElem.dataset.id = card.id;
 
         cardElem.innerHTML = `
           <div class="card-inner">
             <div class="card-back">?</div>
             <div class="card-front">
-              <div class="card-emoji">${card.emoji}</div>
-              <div class="card-text">${card.fullText}</div>
+              <img src="${card.img}" class="card-img" alt="${card.name}">
             </div>
           </div>
         `;
@@ -347,7 +540,7 @@
 
     function handleCardClick(card) {
       if (isBoardLocked) return;
-      if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      if (card.classList.contains('flipped') || card.classList.contains('matched') || card.classList.contains('blinking')) return;
 
       card.classList.add('flipped');
       flippedCards.push(card);
@@ -362,18 +555,23 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // Match found
-        card1.classList.add('matched');
-        card2.classList.add('matched');
-        matchedPairsCount++;
-        flippedCards = [];
-        isBoardLocked = false;
+        card1.classList.add('blinking');
+        card2.classList.add('blinking');
 
-        if (matchedPairsCount === totalPairs) {
-          statusText.textContent = '🎉 太棒了！完成了所有量詞配對！';
-        }
+        setTimeout(() => {
+          card1.classList.remove('blinking');
+          card2.classList.remove('blinking');
+          card1.classList.add('matched');
+          card2.classList.add('matched');
+          matchedPairsCount++;
+          flippedCards = [];
+          isBoardLocked = false;
+
+          if (matchedPairsCount === totalPairs) {
+            statusText.textContent = '🎉 完成所有配對！';
+          }
+        }, 800);
       } else {
-        // No match
         setTimeout(() => {
           card1.classList.remove('flipped');
           card2.classList.remove('flipped');
@@ -381,6 +579,74 @@
           isBoardLocked = false;
         }, 1200);
       }
+    }
+
+    function renderTracker(pool) {
+      trackerList.innerHTML = '';
+      pool.forEach(item => {
+        const itemRow = document.createElement('div');
+        itemRow.classList.add('tracker-item');
+        itemRow.innerHTML = `
+          <div class="tracker-info">
+            <img src="${item.img}" class="tracker-thumb" alt="${item.name}">
+            <span>${item.fullText}</span>
+          </div>
+          <div class="btn-group">
+            <button class="track-btn correct" onclick="recordResult('${item.fullText}', true, this)">✓</button>
+            <button class="track-btn incorrect" onclick="recordResult('${item.fullText}', false, this)">✗</button>
+          </div>
+        `;
+        trackerList.appendChild(itemRow);
+      });
+      updateSummary();
+    }
+
+    window.recordResult = function(fullText, isCorrect, btnElement) {
+      const parent = btnElement.parentElement;
+      parent.querySelectorAll('.track-btn').forEach(b => b.classList.remove('active'));
+
+      if (trackedResults[fullText].status === isCorrect) {
+        trackedResults[fullText].status = null;
+      } else {
+        trackedResults[fullText].status = isCorrect;
+        btnElement.classList.add('active');
+      }
+      updateSummary();
+    };
+
+    function updateSummary() {
+      let totalAssessed = 0;
+      let totalCorrect = 0;
+      const classifierBreakdown = {};
+
+      selectedClassifiers.forEach(c => classifierBreakdown[c] = { correct: 0, total: 0 });
+
+      Object.values(trackedResults).forEach(res => {
+        if (res.status !== null) {
+          totalAssessed++;
+          classifierBreakdown[res.classifier].total++;
+          if (res.status === true) {
+            totalCorrect++;
+            classifierBreakdown[res.classifier].correct++;
+          }
+        }
+      });
+
+      if (totalAssessed === 0) {
+        summaryBox.textContent = '總正確率：尚未點擊紀錄 (0/0)';
+        return;
+      }
+
+      const percent = Math.round((totalCorrect / totalAssessed) * 100);
+      let breakdownText = Object.entries(classifierBreakdown)
+        .filter(([_, data]) => data.total > 0)
+        .map(([cls, data]) => `${cls}: ${data.correct}/${data.total}`)
+        .join(' | ');
+
+      summaryBox.innerHTML = `
+        <div>總正確率：${percent}% (${totalCorrect}/${totalAssessed})</div>
+        <div style="font-weight: normal; font-size: 0.85rem; color: #4A5568; margin-top: 4px;">分項統計：${breakdownText}</div>
+      `;
     }
   </script>
 </body>
