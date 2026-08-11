@@ -99,12 +99,11 @@
 
     button:hover { background: #357ABD; }
 
-    /* Board Layout */
     .game-board {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
-      max-width: 600px;
+      max-width: 640px;
       width: 100%;
       margin-bottom: 20px;
     }
@@ -162,7 +161,6 @@
       border-radius: 6px;
     }
 
-    /* Blink Animation when cards match */
     @keyframes blink-success {
       0% { opacity: 1; transform: scale(1); }
       25% { opacity: 0.3; transform: scale(1.05); }
@@ -181,19 +179,35 @@
       border: 2px solid var(--secondary);
     }
 
-    /* SLP Tracker Panel */
+    /* Tracker Panel */
     .tracker-panel {
       border: 2px solid var(--primary);
       background: #F8FAFC;
     }
 
-    .tracker-panel h2 {
-      margin-top: 0;
-      font-size: 1.2rem;
-      color: var(--primary);
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 2px solid #E2E8F0;
       padding-bottom: 6px;
+      margin-bottom: 10px;
     }
+
+    .tracker-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    .export-btn {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      background: var(--secondary);
+    }
+
+    .export-btn:hover { background: #27AE60; }
 
     .tracker-list {
       display: flex;
@@ -269,7 +283,7 @@
 </head>
 <body>
 
-  <h1>量詞配對翻牌遊戲 (SLP Special)</h1>
+  <h1>量詞配對翻牌遊戲</h1>
 
   <!-- Setup Panel -->
   <div id="setup-panel" class="setup-panel">
@@ -293,6 +307,8 @@
         <option value="8">8 張牌 (4 對)</option>
         <option value="10">10 張牌 (5 對)</option>
         <option value="12" selected>12 張牌 (6 對)</option>
+        <option value="14">14 張牌 (7 對)</option>
+        <option value="16">16 張牌 (8 對)</option>
       </select>
     </div>
 
@@ -300,7 +316,7 @@
   </div>
 
   <!-- Game Controls -->
-  <div id="game-controls" class="hidden" style="width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+  <div id="game-controls" class="hidden" style="width: 100%; max-width: 640px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
     <button id="reset-btn" style="width: auto; padding: 8px 16px;">← 返回設定 Setup</button>
     <div id="status" style="font-weight: bold; color: var(--secondary);"></div>
   </div>
@@ -310,7 +326,10 @@
 
   <!-- Performance Tracker Panel -->
   <div id="tracker-panel" class="tracker-panel hidden">
-    <h2>📊 言語治療師紀錄面板 (Data Tracker)</h2>
+    <div class="tracker-header">
+      <h2>紀錄面板 (Data Tracker)</h2>
+      <button class="export-btn" id="export-img-btn">📷 匯出紀錄圖片 (Export Image)</button>
+    </div>
     <div class="tracker-list" id="tracker-list"></div>
     <div class="summary-box" id="summary-box">總正確率：尚未紀錄</div>
   </div>
@@ -318,23 +337,25 @@
   <script>
     const itemsDatabase = {
       '個': [
-        { name: '蘋果', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=200' },
-        { name: '橙', img: 'https://images.unsplash.com/photo-1547514701-42782101795e?w=200' },
-        { name: '氣球', img: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200' },
-        { name: '書包', img: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=200' },
-        { name: '皮球', img: 'https://images.unsplash.com/photo-1614632537190-23e4146777db?w=200' },
-        { name: '波蘿', img: 'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=200' },
-        { name: '麵包', img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200' },
-        { name: '漢堡包', img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200' },
+        { name: '蘋果', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgvJ8nlAjtvyl8jap55PKPnJt__ggEPtiLoMoqmaGZDiS45yB2LbJUHK7GHHAZ-vsJPHqP79zoCC2BXO8KgnGoMnbj8Rjpme8VKVgidzNbd7vQfaJ_VXIud3UJQ9FMf0yRoS8Mkq5u0M44P/s800/color01_red_apple.png' },
+        { name: '橙', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgq_eoN9nP7LgUxh2K-JGh2OYN-FpanztymNDq9RXFEnLZed8LZldlOAVeWjAdaFjd1896aKxGeOScicmN9mym7mEYNd8XGKa7OITkps7vqU0KYu3h9jWSsANDqRGVtGS-qn8jkT_2g-HYl/s800/fruit_orange.png' },
+        { name: '蛋糕', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgfLl5E-caldAC59w3JzZ-USulyEc4gnC8iqtTuxr-Lg2o6hYTMxZiHhX3zuucbZIFKlBUNu8TBXTjWpAHLsaSbYpWh0r8gz5lVY7MNJONbLFl4ZUgsyvzl9QfAb3v1mK_JeHAGfrsmjDlY/s800/sweets_cake_pavlova.png' },       
+        { name: '醫生', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpsvP9QDnabkeqQ9L1Bw24Vli0KIKPDbrGfyml-X_PLQR0fZ5lGbf9T_clMas9uPzTlopievGQk8n91Olerh8-aJqb4fJkOxrSLIB5l55oEpev2LCSOxpvqhBg593pWT9OywKlwnfm4HrV/s1600/job_doctor_man.png' },
+        { name: '波', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgq3m6ieaVXOaz-vS-ZeXNKJbby5yge-iVr6ABiAbExV1ma088hg2x4s0Zd-owG61Y-SMGMXk04snSjbzscWTkSB-4YvwuuRbsZjUNuuAJSiHUiA71om7F8Abf5_tlA-mKGWzzY0UrnrAod/s180-c/beach_ball.png' },
+        { name: '老師', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj6cVGchklhipf-oWZV29_qEMbfma-eB8Xt3sfKNcgoWCtwnG4c-ElR7pzffKqG9-1PprYMJ8cJMBuMwrK_Uq-LGJEw4H7y6MzRfZI53C83A-qRD0Tq32bbPb9GNQ79s8xLxHDD16_RS91g/s800/job_teacher_woman.png' },
+        { name: '警察', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbDxoBV3A5o2YXx4DuYfr5yYaYrB2JqdaIFQRZ8JxXk7jZ4kjxYw00gnHulrXABfVk3BOWcwAmuW3Safx1-tyRl_lcejQ-2VN-KPuZqIZZ8gc5lOGbQW7L_uotROIa4OZjV-rAwBb3xrjM/s800/police_shirt_man1_young.png' },
+        { name: '漢堡包', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEieX7WGvx2HYArIP6X_pqvQMH5z3Dn-MTiIeLhRnNxzPB5YCxPBBpws3lpgdSzd-e-6lQZnXvkhSn6x8OolkkvqAts-w0u6ffmrbwdg5wmb-k73SIGfqesifFQpz2wQfnYAgQXg3U1wMwUc/s800/hamburger_blt_burger.png' },
       ],
       '條': [
-        { name: '魚', img: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=200' },
+        { name: '魚', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhDeCHHR7_MlVXcfPxa0QJIuoF8htqqifHrW1TirkL2KIEXpZsOE5o8R6YJ87r8GyWzhUvhRzgGD8cyOrUJkKqYWjQ8JGTJIMtT5c_1Fenae83hLALGAVVDar5l-ZDc3mEzyjRW73HnfBE/s800/fish_maguro.png' },
         { name: '香蕉', img: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=200' },
         { name: '褲', img: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=200' },
         { name: '毛巾', img: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=200' },
         { name: '繩子', img: 'https://images.unsplash.com/photo-1518640467707-6811f4a6ab73?w=200' },
         { name: '圍巾', img: 'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=200' },
         { name: '蛇', img: 'https://images.unsplash.com/photo-1531386151447-fd76ad50012f?w=200' },
+        { name: '胡蘿蔔', img: 'https://images.unsplash.com/photo-1598170845058-12ef4a457939?w=200' },
+        { name: '河川', img: 'https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?w=200' },
         { name: '彩虹', img: 'https://images.unsplash.com/photo-1508624217791-5d07012574e4?w=200' }
       ],
       '件': [
@@ -344,7 +365,10 @@
         { name: '泳衣', img: 'https://images.unsplash.com/photo-1576426863848-c21f53c60b19?w=200' },
         { name: '雨衣', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200' },
         { name: '背心', img: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=200' },
+        { name: '裙子', img: 'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=200' },
         { name: '毛衣', img: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200' },
+        { name: '圍裙', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=200' },
+        { name: '雨傘', img: 'https://images.unsplash.com/photo-1517479149777-5f3b6571d546?w=200' }
       ],
       '隻': [
         { name: '狗', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200' },
@@ -389,8 +413,10 @@
         { name: '桌子', img: 'https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?w=200' },
         { name: '相片', img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200' },
         { name: '卡片', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=200' },
+        { name: '地圖', img: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=200' },
         { name: '貼紙', img: 'https://images.unsplash.com/photo-1572375992501-4b0892d50c69?w=200' },
         { name: '沙發', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=200' },
+        { name: '畫像', img: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200' }
       ],
       '塊': [
         { name: '餅乾', img: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=200' },
@@ -398,6 +424,10 @@
         { name: '鏡子', img: 'https://images.unsplash.com/photo-1618220179428-22790b461013?w=200' },
         { name: '布', img: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=200' },
         { name: '披薩', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200' },
+        { name: '海綿', img: 'https://images.unsplash.com/photo-1584305574647-0cc949a2bb9f?w=200' },
+        { name: '瓦片', img: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=200' },
+        { name: '豆腐', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200' },
+        { name: '地毯', img: 'https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=200' },
         { name: '拼圖', img: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200' }
       ]
     };
@@ -418,6 +448,7 @@
     const statusText = document.getElementById('status');
     const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
+    const exportImgBtn = document.getElementById('export-img-btn');
     const classifierBoxes = document.querySelectorAll('#classifier-options input');
 
     classifierBoxes.forEach(box => {
@@ -435,6 +466,8 @@
       trackerPanel.classList.add('hidden');
       setupPanel.classList.remove('hidden');
     });
+
+    exportImgBtn.addEventListener('click', exportTrackerAsImage);
 
     function startGame() {
       selectedClassifiers = Array.from(classifierBoxes)
@@ -634,6 +667,86 @@
         <div>總正確率：${percent}% (${totalCorrect}/${totalAssessed})</div>
         <div style="font-weight: normal; font-size: 0.85rem; color: #4A5568; margin-top: 4px;">分項統計：${breakdownText}</div>
       `;
+    }
+
+    /* Export Tracker Result as Image */
+    function exportTrackerAsImage() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      const items = Object.entries(trackedResults);
+      const width = 500;
+      const rowHeight = 40;
+      const headerHeight = 110;
+      const height = headerHeight + (items.length * rowHeight) + 80;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Background
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, width, height);
+
+      // Border
+      ctx.strokeStyle = '#4A90E2';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(10, 10, width - 20, height - 20);
+
+      // Title & Date
+      ctx.fillStyle = '#4A90E2';
+      ctx.font = 'bold 20px "PingFang HK", "Microsoft JhengHei", sans-serif';
+      ctx.fillText('紀錄面板 (Data Tracker)', 30, 45);
+
+      const today = new Date().toLocaleDateString('zh-HK');
+      ctx.fillStyle = '#718096';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(`日期 Date: ${today}`, 30, 70);
+
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(30, 85);
+      ctx.lineTo(width - 30, 85);
+      ctx.stroke();
+
+      // Items list
+      let y = 115;
+      items.forEach(([itemText, data]) => {
+        ctx.fillStyle = '#2C3E50';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(`• ${itemText}`, 30, y);
+
+        let statusText = '未紀錄 (N/A)';
+        let statusColor = '#A0AEC0';
+
+        if (data.status === true) {
+          statusText = '正確 (✓)';
+          statusColor = '#2ECC71';
+        } else if (data.status === false) {
+          statusText = '錯誤 (✗)';
+          statusColor = '#E74C3C';
+        }
+
+        ctx.fillStyle = statusColor;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(statusText, width - 150, y);
+
+        y += rowHeight;
+      });
+
+      // Summary Box
+      ctx.strokeStyle = '#4A90E2';
+      ctx.strokeRect(30, y, width - 60, 50);
+
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText(summaryBox.innerText.replace('\n', ' - '), 40, y + 30);
+
+      // Download trigger
+      const link = document.createElement('a');
+      link.download = `量詞紀錄_${today.replace(/\//g, '-')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
   </script>
 </body>
