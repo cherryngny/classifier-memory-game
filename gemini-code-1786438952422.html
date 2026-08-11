@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cantonese Classifier Memory Game - 量詞配對翻牌遊戲</title>
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --secondary: #50E3C2;
+      --bg: #F0F4F8;
+      --card-bg: #FFFFFF;
+      --card-back: #357ABD;
+      --text: #2C3E50;
+    }
+
+    body {
+      font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .setup-panel {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .checkbox-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      background: #EAEFF5;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 1.1rem;
+    }
+
+    .checkbox-btn input {
+      display: none;
+    }
+
+    .checkbox-btn.selected {
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+    }
+
+    select, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #CCC;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #357ABD;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .card {
+      aspect-ratio: 1 / 1;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.5s;
+      transform-style: preserve-3d;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-radius;
+    }
+
+    .card-back {
+      background: var(--card-back);
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .card-front {
+      background: var(--card-bg);
+      transform: rotateY(180deg);
+      border: 2px solid var(--primary);
+    }
+
+    .card-emoji {
+      font-size: 2.2rem;
+    }
+
+    .card-text {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .card.matched .card-inner {
+      opacity: 0.6;
+      border-color: var(--secondary);
+    }
+
+    .status {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #27AE60;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>量詞配對翻牌遊戲</h1>
+
+  <!-- Setup Panel -->
+  <div id="setup-panel" class="setup-panel">
+    <div class="form-group">
+      <label>1. 選擇 2 至 3 個目標量詞：</label>
+      <div class="checkbox-group" id="classifier-options">
+        <label class="checkbox-btn"><input type="checkbox" value="個">個</label>
+        <label class="checkbox-btn"><input type="checkbox" value="條">條</label>
+        <label class="checkbox-btn"><input type="checkbox" value="件">件</label>
+        <label class="checkbox-btn"><input type="checkbox" value="隻">隻</label>
+        <label class="checkbox-btn"><input type="checkbox" value="粒">粒</label>
+        <label class="checkbox-btn"><input type="checkbox" value="架">架</label>
+        <label class="checkbox-btn"><input type="checkbox" value="張">張</label>
+        <label class="checkbox-btn"><input type="checkbox" value="塊">塊</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="card-count">2. 選擇卡牌總數：</label>
+      <select id="card-count">
+        <option value="8">8 張牌 (4 對)</option>
+        <option value="10">10 張牌 (5 對)</option>
+        <option value="12" selected>12 張牌 (6 對)</option>
+      </select>
+    </div>
+
+    <button id="start-btn">開始遊戲 Start Game</button>
+  </div>
+
+  <!-- Game Controls & Status -->
+  <div id="game-controls" class="hidden">
+    <button id="reset-btn" style="width: auto; padding: 8px 20px; margin-bottom: 15px;">重新開始 Reset</button>
+    <div id="status" class="status"></div>
+  </div>
+
+  <!-- Board -->
+  <div id="game-board" class="game-board hidden"></div>
+
+  <script>
+    // Database of items mapped to classifiers
+    const itemsDatabase = {
+      '個': [{ name: '蘋果', emoji: '🍎' }, { name: '橙', emoji: '🍊' }, { name: '氣球', emoji: '🎈' }],
+      '條': [{ name: '魚', emoji: '🐟' }, { name: '香蕉', emoji: '🍌' }, { name: '褲', emoji: '👖' }],
+      '件': [{ name: '衫', emoji: '👕' }, { name: '外套', emoji: '🧥' }, { name: '禮物', emoji: '🎁' }],
+      '隻': [{ name: '狗', emoji: '🐶' }, { name: '貓', emoji: '🐱' }, { name: '鴨', emoji: '🦆' }],
+      '粒': [{ name: '糖', emoji: '🍬' }, { name: '提子', emoji: '🍇' }, { name: '草莓', emoji: '🍓' }],
+      '架': [{ name: '車', emoji: '🚗' }, { name: '飛機', emoji: '✈️' }, { name: '單車', emoji: '🚲' }],
+      '張': [{ name: '紙', emoji: '📄' }, { name: '椅', emoji: '🪑' }, { name: '床', emoji: '🛏️' }],
+      '塊': [{ name: '餅乾', emoji: '🍪' }, { name: '西瓜', emoji: '🍉' }, { name: '蛋糕', emoji: '🍰' }]
+    };
+
+    let selectedClassifiers = [];
+    let flippedCards = [];
+    let matchedPairsCount = 0;
+    let totalPairs = 0;
+    let isBoardLocked = false;
+
+    // UI elements
+    const setupPanel = document.getElementById('setup-panel');
+    const gameBoard = document.getElementById('game-board');
+    const gameControls = document.getElementById('game-controls');
+    const statusText = document.getElementById('status');
+    const startBtn = document.getElementById('start-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const classifierBoxes = document.querySelectorAll('#classifier-options input');
+
+    // Toggle button selection styling
+    classifierBoxes.forEach(box => {
+      box.addEventListener('change', (e) => {
+        const parent = e.target.parentElement;
+        if (e.target.checked) parent.classList.add('selected');
+        else parent.classList.remove('selected');
+      });
+    });
+
+    startBtn.addEventListener('click', startGame);
+    resetBtn.addEventListener('click', () => {
+      gameBoard.classList.add('hidden');
+      gameControls.classList.add('hidden');
+      setupPanel.classList.remove('hidden');
+    });
+
+    function startGame() {
+      // Get selected classifiers
+      selectedClassifiers = Array.from(classifierBoxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+      if (selectedClassifiers.length < 2 || selectedClassifiers.length > 3) {
+        alert('請選擇 2 至 3 個目標量詞！');
+        return;
+      }
+
+      const cardCount = parseInt(document.getElementById('card-count').value);
+      totalPairs = cardCount / 2;
+
+      // Generate card pool
+      const pool = [];
+      let currentIdx = 0;
+      
+      while (pool.length < totalPairs) {
+        const classifier = selectedClassifiers[currentIdx % selectedClassifiers.length];
+        const possibleItems = itemsDatabase[classifier];
+        const randomItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
+        
+        pool.push({
+          classifier: classifier,
+          name: randomItem.name,
+          emoji: randomItem.emoji,
+          fullText: `一${classifier}${randomItem.name}`
+        });
+        currentIdx++;
+      }
+
+      // Duplicate to create pairs and shuffle
+      let cardsData = [...pool, ...pool].map((item, index) => ({ ...item, id: index }));
+      cardsData = shuffle(cardsData);
+
+      // Render Board
+      renderBoard(cardsData);
+
+      setupPanel.classList.add('hidden');
+      gameControls.classList.remove('hidden');
+      gameBoard.classList.remove('hidden');
+      statusText.textContent = '';
+      matchedPairsCount = 0;
+      flippedCards = [];
+      isBoardLocked = false;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function renderBoard(cards) {
+      gameBoard.innerHTML = '';
+      cards.forEach(card => {
+        const cardElem = document.createElement('div');
+        cardElem.classList.add('card');
+        cardElem.dataset.fullText = card.fullText;
+        cardElem.dataset.id = card.id;
+
+        cardElem.innerHTML = `
+          <div class="card-inner">
+            <div class="card-back">?</div>
+            <div class="card-front">
+              <div class="card-emoji">${card.emoji}</div>
+              <div class="card-text">${card.fullText}</div>
+            </div>
+          </div>
+        `;
+
+        cardElem.addEventListener('click', () => handleCardClick(cardElem));
+        gameBoard.appendChild(cardElem);
+      });
+    }
+
+    function handleCardClick(card) {
+      if (isBoardLocked) return;
+      if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+      card.classList.add('flipped');
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      isBoardLocked = true;
+      const [card1, card2] = flippedCards;
+
+      if (card1.dataset.fullText === card2.dataset.fullText) {
+        // Match found
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        matchedPairsCount++;
+        flippedCards = [];
+        isBoardLocked = false;
+
+        if (matchedPairsCount === totalPairs) {
+          statusText.textContent = '🎉 太棒了！完成了所有量詞配對！';
+        }
+      } else {
+        // No match
+        setTimeout(() => {
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
+          flippedCards = [];
+          isBoardLocked = false;
+        }, 1200);
+      }
+    }
+  </script>
+</body>
+</html>
