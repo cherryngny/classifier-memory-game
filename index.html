@@ -80,12 +80,13 @@
       font-weight: bold;
     }
 
-    select, button {
+    select, button, input[type="text"] {
       width: 100%;
       padding: 10px;
       font-size: 1rem;
       border-radius: 8px;
       border: 1px solid #CCC;
+      box-sizing: border-box;
     }
 
     button {
@@ -191,13 +192,31 @@
       align-items: center;
       border-bottom: 2px solid #E2E8F0;
       padding-bottom: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .tracker-header h2 {
       margin: 0;
       font-size: 1.2rem;
       color: var(--primary);
+    }
+
+    .name-input-box {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .name-input-box label {
+      margin-bottom: 0;
+      white-space: nowrap;
+      font-size: 0.95rem;
+    }
+
+    .name-input-box input {
+      padding: 6px 10px;
+      font-size: 0.95rem;
     }
 
     .export-btn {
@@ -330,6 +349,12 @@
       <h2>紀錄面板 (Data Tracker)</h2>
       <button class="export-btn" id="export-img-btn">📷 匯出紀錄圖片 (Export Image)</button>
     </div>
+
+    <div class="name-input-box">
+      <label for="child-name">學生/兒童名字 (Name):</label>
+      <input type="text" id="child-name" placeholder="請輸入名字...">
+    </div>
+
     <div class="tracker-list" id="tracker-list"></div>
     <div class="summary-box" id="summary-box">總正確率：尚未紀錄</div>
   </div>
@@ -339,7 +364,7 @@
       '個': [
         { name: '蘋果', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgvJ8nlAjtvyl8jap55PKPnJt__ggEPtiLoMoqmaGZDiS45yB2LbJUHK7GHHAZ-vsJPHqP79zoCC2BXO8KgnGoMnbj8Rjpme8VKVgidzNbd7vQfaJ_VXIud3UJQ9FMf0yRoS8Mkq5u0M44P/s800/color01_red_apple.png' },
         { name: '橙', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgq_eoN9nP7LgUxh2K-JGh2OYN-FpanztymNDq9RXFEnLZed8LZldlOAVeWjAdaFjd1896aKxGeOScicmN9mym7mEYNd8XGKa7OITkps7vqU0KYu3h9jWSsANDqRGVtGS-qn8jkT_2g-HYl/s800/fruit_orange.png' },
-        { name: '蛋糕', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgfLl5E-caldAC59w3JzZ-USulyEc4gnC8iqtTuxr-Lg2o6hYTMxZiHhX3zuucbZIFKlBUNu8TBXTjWpAHLsaSbYpWh0r8gz5lVY7MNJONbLFl4ZUgsyvzl9QfAb3v1mK_JeHAGfrsmjDlY/s800/sweets_cake_pavlova.png' },       
+        { name: '蛋糕', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgfLl5E-caldAC59w3JzZ-USulyEc4gnC8iqtTuxr-Lg2o6hYTMxZiHhX3zuucbZIFKlBUNu8TBXTjWpAHLsaSbYpWh0r8gz5lVY7MNJONbLFl4ZUgsyvzl9QfAb3v1mK_JeHAGfrsmjDlY/s800/sweets_cake_pavlova.png' },        
         { name: '醫生', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjpsvP9QDnabkeqQ9L1Bw24Vli0KIKPDbrGfyml-X_PLQR0fZ5lGbf9T_clMas9uPzTlopievGQk8n91Olerh8-aJqb4fJkOxrSLIB5l55oEpev2LCSOxpvqhBg593pWT9OywKlwnfm4HrV/s1600/job_doctor_man.png' },
         { name: '波', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgq3m6ieaVXOaz-vS-ZeXNKJbby5yge-iVr6ABiAbExV1ma088hg2x4s0Zd-owG61Y-SMGMXk04snSjbzscWTkSB-4YvwuuRbsZjUNuuAJSiHUiA71om7F8Abf5_tlA-mKGWzzY0UrnrAod/s180-c/beach_ball.png' },
         { name: '老師', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj6cVGchklhipf-oWZV29_qEMbfma-eB8Xt3sfKNcgoWCtwnG4c-ElR7pzffKqG9-1PprYMJ8cJMBuMwrK_Uq-LGJEw4H7y6MzRfZI53C83A-qRD0Tq32bbPb9GNQ79s8xLxHDD16_RS91g/s800/job_teacher_woman.png' },
@@ -363,11 +388,10 @@
         { name: '泳衣', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjndTmGPjXBWHLHbmCbB-wr0orNkK-NtFspd3u9_qtqLRZb68So1f4C2XR1c03xQlJxTo2uqs9U-8u1PuQh2awzAVxNCnS6H12PEEU_-0q2PTK-2_7v_Zg8_GzWuvatpC_6WaHxgVYuZSUBUW_QqVB93uMUE2MZbrMHqTiBXE-NahZFV67RpaPBEB7tHQ/s1003/pool_mizugi_school_girl.png' },
         { name: '雨衣', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiXmN5T31SYm-N4hp1B8izjbAOarr4GLEnVN7kZsqa7MMpCoggVHmqisKU9Qo3zad_ldRERARwgjXuuq0D1VEYCvlIIcOb2bg33IVfVKCaSyM-6IJqIkwWoGM-H69ZeZuFi9KCdhRWOCtE/s400/fashion_raincoat_amagappa.png' },
         { name: '衫', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjva8PWi8UzhQ-TJ6o4aiHG-nIOoTirNMVtU_NuYyxVst2Z5ZmxkErTYlmxbxkjlJxt2bDqxAYSB9zv59NQ4ntHQ7CPzkr3ynvZ3sXCni0_zTsVdhEoSrXFwMengyNaZsgrMNXlYj9wWB11/s742/fashion_shirt3_skyblue.png' },
-        { name: '冷衫', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPxUvo8wkIKkmglg4pkXQ8UbnnXrkHNYUTh5wISFj4JWjt69ySgAWv9zprV5NkwmiOWq8FvjQAtbtjWAtVPJ9_ZEHm88wT_0NaIwexRfS0XUNUhDJOUluf6OMJCqsQmAl97gNwdAh-NkY/s400/sweater_teami.png' },
-        { name: '雨衣', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiXmN5T31SYm-N4hp1B8izjbAOarr4GLEnVN7kZsqa7MMpCoggVHmqisKU9Qo3zad_ldRERARwgjXuuq0D1VEYCvlIIcOb2bg33IVfVKCaSyM-6IJqIkwWoGM-H69ZeZuFi9KCdhRWOCtE/s400/fashion_raincoat_amagappa.png' },
+        { name: '冷衫', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhPxUvo8wkIKkmglg4pkXQ8UbnnXrkHNYUTh5wISFj4JWjt69ySgAWv9zprV5NkwmiOWq8FvjQAtbtjWAtVPJ9_ZEHm88wT_0NaIwexRfS0XUNUhDJOUluf6OMJCqsQmAl97gNwdAh-NkY/s400/sweater_teami.png' }
       ],
       '隻': [
-        { name: '狗', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiiCep356zNVAeR-4r1V3dGYiquyg8clI8DWQocjPgodXO5XENIVyEpg91iXMFdmfiEPZGXtzzR5MU9jc4PmtiRb1zco6UhyphenhyphennOUNUUbSsUt3vVFF5SE01mpLupgecjE7vKxaWsU_5y0hcc/s800/animal_dog_osuwari.png' },
+        { name: '狗', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi体内56zNVAeR-4r1V3dGYiquyg8clI8DWQocjPgodXO5XENIVyEpg91iXMFdmfiEPZGXtzzR5MU9jc4PmtiRb1zco6UhyphenhyphennOUNUUbSsUt3vVFF5SE01mpLupgecjE7vKxaWsU_5y0hcc/s800/animal_dog_osuwari.png' },
         { name: '貓', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiTDl81C4SMTFVZC9yP0m0iESBSw_0D53KcR3HGvR27lDFJzFWSDvRawhJEKAeoT19GHEJI8iTwLEMPeuTOcZpLI-BBDatvH2LPHS2S_F6vFFOAJ_56bwfsqNTVjp7shr1_g0QPaAWj1vyp/s400/pet_cat_sit.png' },
         { name: '雀仔', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpE4oCTN3xfTnb3ZA92EyuhFw9YyZTnjCQ1CmToEbDnkEKSL0fTbrVyZd6YWap8fpKJ1xTkJ1Ooeg8o7ACOxYtr2gwFpK244i46w1-C-uC2nqOKHXAx-NLF27SX_qDwHGuO838MveGyYSC/s400/bird_mameruriha_inko_blue.png' },
         { name: '兔子', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiHBIpFKJISBPLsRg4lmMV9wB2HoU4MGvq5JmEXiAjia5knfUawex8qR6HyDIPcXJPYHxa0u_lLEEoWBYefgmL3PgVKOPRq0bqVNs6t3km0O85xZHGe0SYqoXmM-RgXoSE3maKv29vdqbw/s400/usagi_oyako.png' },
@@ -394,7 +418,7 @@
         { name: '列車', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjY8NH9meSkt-xZ2hTgdKc2Y2SbRYcUXtmXMl7BhJBo6VXmHZVY1X0-le9djGmCl0OIoQJuj7BvXX1Y14di3S89eVvJi8Ffv2WFTkkO18xANbNwxtQUzuBg0SZZY-peMSfJzlnNDLw9THE/s540/shinkansen_e7_w7.png' },
         { name: '直升機', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhUA7NVOCanwiWfc6sDtG7xCdys_zkCIFFUB0tyao6UTfJMhx5NIxYlXiEHm1u4ODYuKJ47iYdeEaJpWMLfSkBjCLQtZn1tXihPOugB0_7yUQB7b-QzXPVlLu9swFDV7_rvqB3sUop78LRP/s800/helicopter.png' },
         { name: '消防車', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgZ7rwtkwm7RFoL2zrfVNuEScGgrqDphb0vzp_oqxNGRy-e4XRbrHsNlvQuzdRNSACEWAIN5th3nxYKefKnYZcf0CIlAf6CCnTmZzgJNn_ugjkXYAsfcQrioslsbDDXrEE5ztrzkKBxhGnR/s400/syoubousya_pump.png' },
-        { name: '警車', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjlOf6QS_VYnUwrYfFTNroovBUWTSSGyxWOW9hXI2YgWZQwNWvQWqpjRrwhIhcRfkYP-CHjsIc-xeEUPaWYvKPPyc88473R8DlWBM4mN_f3qkuCu7fRGs_x9gZ_hB5k_IiQPax4zNfEGYCS/s800/car_patocar_america.png' },
+        { name: '警車', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjlOf6QS_VYnUwrYfFTNroovBUWTSSGyxWOW9hXI2YgWZQwNWvQWqpjRrwhIhcRfkYP-CHjsIc-xeEUPaWYvKPPyc88473R8DlWBM4mN_f3qkuCu7fRGs_x9gZ_hB5k_IiQPax4zNfEGYCS/s800/car_patocar_america.png' }
       ],
       '張': [
         { name: '紙巾', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw8yn3qD8llFSs8T68GEk3lTROoyc6XCog_xggnlDgm3U5j1H0wrVkg-UZA8n2YA6dB181x4pB7dMvxBoorJ0U6WcHFIa_fyIsRRarCvHIqY62L_c1rW0LGp3y8WHcl9oIcPzAVcAw-zAL/s800/kagaku_kami_wesu.png' },
@@ -404,7 +428,7 @@
         { name: '相片', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhzcs38vpsiVwrCt5rIYc0UZ_LhjTJBt3WKuv3nh_eJW0rY2gg_43BRRlLBSffbvvFGs-TvQYVLK4M5t9GbmmVbAKRRRfQ7GELib2iRJ43c-xy-h55SI9ME3Z9A6fUTatd5M5eV51Dm7lYD/s800/photo_omoide.png' },
         { name: '八達通', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtRKlcRa_eARIFRK-14ahhPF_dTphFtHk5IuWsZMEczvdo5dvhFHHHYc4&s=10' },
         { name: '貼紙', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgjEVkcBIZ-zqm1LTWo9vepyFLsmNSDDTZOr6lvguvMtc-vBG-7bXK5mktfcTS50Gkl9qfobHHgi6kdJXUmRepk6JkawEqhB7vNMGt5SV5FovL75vRSR1sFBw_Mr-mtJsGa71IDGMrS6nvK/s800/toy_stickers.png' },
-        { name: '梳化', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhM3YxI5TaHc9lGg0WY6QlTLi2BlCaBBH5SS08dGeCzZ0FzoVzqjFDmOW-8rbTCLIJiUW9DbvM9SUcLheKu7YIYeNDghYYExOvxdNG2lO3xg2u6bLifjz6EQ_Fz-rNLhcSThImBTwzxkYB-/s800/kagu_sofa.png' },
+        { name: '梳化', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhM3YxI5TaHc9lGg0WY6QlTLi2BlCaBBH5SS08dGeCzZ0FzoVzqjFDmOW-8rbTCLIJiUW9DbvM9SUcLheKu7YIYeNDghYYExOvxdNG2lO3xg2u6bLifjz6EQ_Fz-rNLhcSThImBTwzxkYB-/s800/kagu_sofa.png' }
       ],
       '塊': [
         { name: '餅乾', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhGnbxYCYyRVVRZXc1_4LOQ0WZq41ChRCoNmTVk3jG6Jj037fz1Ln2drsHPsXj9JeKUC1SoJEYbZlCB4OtilRUi4o1a5qw3Z3r74c2LPrcGZcLea0lOaSC6924RPHFinhWyxYaq0t4bXz1-/s800/sweets_biscuit.png' },
@@ -435,6 +459,7 @@
     const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
     const exportImgBtn = document.getElementById('export-img-btn');
+    const childNameInput = document.getElementById('child-name');
     const classifierBoxes = document.querySelectorAll('#classifier-options input');
 
     classifierBoxes.forEach(box => {
@@ -639,7 +664,7 @@
       });
 
       if (totalAssessed === 0) {
-        summaryBox.textContent = '總正確率：尚未點擊紀錄 (0/0)';
+        summaryBox.textContent = '總正確率：尚未紀錄 (0/0)';
         return;
       }
 
@@ -655,15 +680,16 @@
       `;
     }
 
-    /* Export Tracker Result as Image */
+    /* Export Tracker Result as Image with Name */
     function exportTrackerAsImage() {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
+      const nameVal = childNameInput.value.trim() || '未填寫 (N/A)';
       const items = Object.entries(trackedResults);
       const width = 500;
       const rowHeight = 40;
-      const headerHeight = 110;
+      const headerHeight = 135;
       const height = headerHeight + (items.length * rowHeight) + 80;
 
       canvas.width = width;
@@ -678,25 +704,30 @@
       ctx.lineWidth = 4;
       ctx.strokeRect(10, 10, width - 20, height - 20);
 
-      // Title & Date
+      // Title
       ctx.fillStyle = '#4A90E2';
       ctx.font = 'bold 20px "PingFang HK", "Microsoft JhengHei", sans-serif';
       ctx.fillText('紀錄面板 (Data Tracker)', 30, 45);
 
+      // Name & Date
       const today = new Date().toLocaleDateString('zh-HK');
+      ctx.fillStyle = '#2C3E50';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText(`名字 (Name): ${nameVal}`, 30, 75);
+
       ctx.fillStyle = '#718096';
       ctx.font = '14px sans-serif';
-      ctx.fillText(`日期 Date: ${today}`, 30, 70);
+      ctx.fillText(`日期 Date: ${today}`, 30, 98);
 
       ctx.strokeStyle = '#E2E8F0';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(30, 85);
-      ctx.lineTo(width - 30, 85);
+      ctx.moveTo(30, 110);
+      ctx.lineTo(width - 30, 110);
       ctx.stroke();
 
       // Items list
-      let y = 115;
+      let y = 140;
       items.forEach(([itemText, data]) => {
         ctx.fillStyle = '#2C3E50';
         ctx.font = 'bold 16px sans-serif';
@@ -730,7 +761,8 @@
 
       // Download trigger
       const link = document.createElement('a');
-      link.download = `量詞紀錄_${today.replace(/\//g, '-')}.png`;
+      const safeName = nameVal.replace(/[/\\?%*:|"<>]/g, '');
+      link.download = `量詞紀錄_${safeName}_${today.replace(/\//g, '-')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     }
