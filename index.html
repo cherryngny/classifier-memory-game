@@ -191,14 +191,14 @@
       filter: grayscale(60%);
     }
 
-    /* Completion Overlay Pop-up */
+    /* Completion Overlay Pop-up Modal */
     .victory-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.5);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -208,31 +208,38 @@
 
     .victory-modal {
       background: white;
-      padding: 30px;
+      padding: 32px 24px;
       border-radius: 20px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
       max-width: 90%;
-      width: 400px;
+      width: 380px;
       animation: scaleUp 0.3s ease-out;
     }
 
     .victory-modal h2 {
       color: var(--secondary);
       font-size: 2.2rem;
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
     }
 
     .victory-modal p {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       color: var(--text);
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      line-height: 1.4;
     }
 
     .victory-modal button {
       background: var(--secondary);
       font-size: 1.1rem;
-      padding: 12px 24px;
+      padding: 12px 28px;
+      width: auto;
+      border-radius: 10px;
+    }
+
+    .victory-modal button:hover {
+      background: #27AE60;
     }
 
     @keyframes fadeIn {
@@ -241,7 +248,7 @@
     }
 
     @keyframes scaleUp {
-      from { transform: scale(0.8); }
+      from { transform: scale(0.75); }
       to { transform: scale(1); }
     }
 
@@ -408,11 +415,11 @@
   <!-- Game Board -->
   <div id="game-board" class="game-board hidden"></div>
 
-  <!-- Victory Overlay Modal -->
+  <!-- FEATURE (2): Salient Victory Screen Modal Overlay -->
   <div id="victory-overlay" class="victory-overlay hidden">
     <div class="victory-modal">
       <h2>🎉 完成所有配對！</h2>
-      <p>做得好！你已經順利完成所有量詞卡牌配對！</p>
+      <p>太棒了！你已經順利完成所有量詞卡牌配對！</p>
       <button onclick="closeVictoryOverlay()">確定 OK</button>
     </div>
   </div>
@@ -651,7 +658,7 @@
       });
     }
 
-    // Turns previous matched cards face-down
+    // FEATURE (1): Turns active/previous matched cards face-down
     function finalizeActiveCards() {
       if (activeMatchedCards.length > 0) {
         activeMatchedCards.forEach(c => {
@@ -693,10 +700,10 @@
         isBoardLocked = false;
 
         if (matchedPairsCount === totalPairs) {
-          // Delay briefly to allow the blink animation before turning final pair face-down & celebrating
+          // Delay briefly to allow blink animation, then turn final pair face-down & trigger victory!
           setTimeout(() => {
-            finalizeActiveCards();
-            triggerVictory();
+            finalizeActiveCards(); // (1) Face-down final pair
+            triggerVictory();      // (2) Victory screen & (3) Confetti
           }, 800);
         }
       } else {
@@ -712,9 +719,11 @@
 
     function triggerVictory() {
       statusText.textContent = '🎉 完成所有配對！';
+      
+      // FEATURE (2): Show victory screen overlay
       victoryOverlay.classList.remove('hidden');
       
-      // Fire festive confetti blasts
+      // FEATURE (3): Confetti cannon launch!
       if (typeof confetti === 'function') {
         confetti({
           particleCount: 100,
@@ -723,18 +732,18 @@
         });
         setTimeout(() => {
           confetti({
-            particleCount: 50,
+            particleCount: 60,
             angle: 60,
             spread: 55,
             origin: { x: 0 }
           });
           confetti({
-            particleCount: 50,
+            particleCount: 60,
             angle: 120,
             spread: 55,
             origin: { x: 1 }
           });
-        }, 250);
+        }, 200);
       }
     }
 
