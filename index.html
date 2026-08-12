@@ -162,19 +162,20 @@
       border-radius: 6px;
     }
 
-    /* Keyframes for face-up blinking */
-    @keyframes blink-success {
-      0% { opacity: 1; transform: rotateY(180deg) scale(1); }
-      25% { opacity: 0.2; transform: rotateY(180deg) scale(1.05); }
-      50% { opacity: 1; transform: rotateY(180deg) scale(1.05); }
-      75% { opacity: 0.2; transform: rotateY(180deg) scale(1.05); }
-      100% { opacity: 1; transform: rotateY(180deg) scale(1); }
+    /* Keyframes animating opacity directly while face-up */
+    @keyframes blink-image-faceup {
+      0% { opacity: 1; transform: scale(1); }
+      25% { opacity: 0.15; transform: scale(1.05); }
+      50% { opacity: 1; transform: scale(1.05); }
+      75% { opacity: 0.15; transform: scale(1.05); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
-    /* FORCES BOTH CARDS TO REMAIN FLIPPED FACE-UP WHILE BLINKING */
-    .card.blinking .card-inner {
-      animation: blink-success 1s ease-in-out forwards !important;
+    /* Target card-front directly to guarantee picture visibility during blinking */
+    .card.blinking .card-front {
+      animation: blink-image-faceup 1s ease-in-out forwards !important;
       border: 3px solid var(--secondary);
+      z-index: 10;
     }
 
     /* Completed state after flipping back upside down */
@@ -589,16 +590,16 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // Start blinking BOTH face-up cards
+        // Blink face-up images
         card1.classList.add('blinking');
         card2.classList.add('blinking');
 
         setTimeout(() => {
-          // Remove blinking animation
+          // Finish blinking animation
           card1.classList.remove('blinking');
           card2.classList.remove('blinking');
 
-          // NOW flip both cards upside down and lock them into matched state
+          // Flip both cards back upside down together
           card1.classList.remove('flipped');
           card2.classList.remove('flipped');
           card1.classList.add('matched');
@@ -611,7 +612,7 @@
           if (matchedPairsCount === totalPairs) {
             statusText.textContent = '🎉 完成所有配對！';
           }
-        }, 1000); // Blinks face-up for 1 second before turning upside down
+        }, 1000); // 1.0 second duration for blinking face-up
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
