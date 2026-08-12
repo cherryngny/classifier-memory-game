@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cantonese Classifier Memory Game - SLP Edition</title>
+  <!-- html2canvas for exporting performance report as image -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --primary: #4A90E2;
@@ -377,7 +379,7 @@
         { name: '波', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgq3m6ieaVXOaz-vS-ZeXNKJbby5yge-iVr6ABiAbExV1ma088hg2x4s0Zd-owG61Y-SMGMXk04snSjbzscWTkSB-4YvwuuRbsZjUNuuAJSiHUiA71om7F8Abf5_tlA-mKGWzzY0UrnrAod/s180-c/beach_ball.png' },
         { name: '老師', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj6cVGchklhipf-oWZV29_qEMbfma-eB8Xt3sfKNcgoWCtwnG4c-ElR7pzffKqG9-1PprYMJ8cJMBuMwrK_Uq-LGJEw4H7y6MzRfZI53C83A-qRD0Tq32bbPb9GNQ79s8xLxHDD16_RS91g/s800/job_teacher_woman.png' },
         { name: '警察', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbDxoBV3A5o2YXx4DuYfr5yYaYrB2JqdaIFQRZ8JxXk7jZ4kjxYw00gnHulrXABfVk3BOWcwAmuW3Safx1-tyRl_lcejQ-2VN-KPuZqIZZ8gc5lOGbQW7L_uotROIa4OZjV-rAwBb3xrjM/s800/police_shirt_man1_young.png' },
-        { name: '漢堡包', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEieX7WGvx2HYArIP6X_pqvQMH5z3Dn-MTiIeLhRnNxzPB5YCxPBBpws3lpgdSzd-e-6lQZnXvkhSn6x8OolkkvqAts-w0u6ffmrbwdg5wmb-k73SIGfqesifFQpz2wQfnYAgQXg3U1wMwUc/s800/hamburger_blt_burger.png' },
+        { name: '漢堡包', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEieX7WGvx2HYArIP6X_pqvQMH5z3Dn-MTiIeLhRnNxzPB5YCxPBBpws3lpgdSzd-e-6lQZnXvkhSn6x8OolkkvqAts-w0u6ffmrbwdg5wmb-k73SIGfqesifFQpz2wQfnYAgQXg3U1wMwUc/s800/hamburger_blt_burger.png' }
       ],
       '條': [
         { name: '魚', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhDeCHHR7_MlVXcfPxa0QJIuoF8htqqifHrW1TirkL2KIEXpZsOE5o8R6YJ87r8GyWzhUvhRzgGD8cyOrUJkKqYWjQ8JGTJIMtT5c_1Fenae83hLALGAVVDar5l-ZDc3mEzyjRW73HnfBE/s800/fish_maguro.png' },
@@ -657,139 +659,88 @@
       updateSummary();
     }
 
-    window.recordResult = function(fullText, isCorrect, btnElement) {
-      const parent = btnElement.parentElement;
-      parent.querySelectorAll('.track-btn').forEach(b => b.classList.remove('active'));
+    function recordResult(fullText, isCorrect, btn) {
+      const parentGroup = btn.parentElement;
+      const btns = parentGroup.querySelectorAll('.track-btn');
+      btns.forEach(b => b.classList.remove('active'));
 
       if (trackedResults[fullText].status === isCorrect) {
         trackedResults[fullText].status = null;
       } else {
         trackedResults[fullText].status = isCorrect;
-        btnElement.classList.add('active');
+        btn.classList.add('active');
       }
+
       updateSummary();
-    };
+    }
 
     function updateSummary() {
-      let totalAssessed = 0;
+      let totalRecorded = 0;
       let totalCorrect = 0;
-      const classifierBreakdown = {};
+      const classifierStats = {};
 
-      selectedClassifiers.forEach(c => classifierBreakdown[c] = { correct: 0, total: 0 });
+      selectedClassifiers.forEach(c => {
+        classifierStats[c] = { correct: 0, total: 0 };
+      });
 
       Object.values(trackedResults).forEach(res => {
         if (res.status !== null) {
-          totalAssessed++;
-          classifierBreakdown[res.classifier].total++;
+          totalRecorded++;
           if (res.status === true) {
             totalCorrect++;
-            classifierBreakdown[res.classifier].correct++;
+            if (classifierStats[res.classifier]) classifierStats[res.classifier].correct++;
           }
+          if (classifierStats[res.classifier]) classifierStats[res.classifier].total++;
         }
       });
 
-      if (totalAssessed === 0) {
-        summaryBox.textContent = '總正確率：尚未紀錄 (0/0)';
+      if (totalRecorded === 0) {
+        summaryBox.textContent = '總正確率：尚未紀錄';
         return;
       }
 
-      const percent = Math.round((totalCorrect / totalAssessed) * 100);
-      let breakdownText = Object.entries(classifierBreakdown)
-        .filter(([_, data]) => data.total > 0)
-        .map(([cls, data]) => `${cls}: ${data.correct}/${data.total}`)
-        .join(' | ');
+      const totalPct = Math.round((totalCorrect / totalRecorded) * 100);
+      let details = `總正確率：${totalCorrect}/${totalRecorded} (${totalPct}%)`;
 
-      summaryBox.innerHTML = `
-        <div>總正確率：${percent}% (${totalCorrect}/${totalAssessed})</div>
-        <div style="font-weight: normal; font-size: 0.85rem; color: #4A5568; margin-top: 4px;">分項統計：${breakdownText}</div>
-      `;
+      const breakdown = selectedClassifiers.map(c => {
+        const stat = classifierStats[c];
+        if (stat.total === 0) return `${c}: -`;
+        const pct = Math.round((stat.correct / stat.total) * 100);
+        return `「${c}」: ${stat.correct}/${stat.total} (${pct}%)`;
+      }).join(' | ');
+
+      summaryBox.innerHTML = `<div>${details}</div><div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #4A5568;">${breakdown}</div>`;
     }
 
-    /* Export Tracker Result as Image with Name */
     function exportTrackerAsImage() {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const name = childNameInput.value.trim() || '未命名';
+      
+      // Temporarily expand height for html2canvas capture
+      const originalMaxHeight = trackerList.style.maxHeight;
+      const originalOverflow = trackerList.style.overflowY;
+      trackerList.style.maxHeight = 'none';
+      trackerList.style.overflowY = 'visible';
 
-      const nameVal = childNameInput.value.trim() || '未填寫 (N/A)';
-      const items = Object.entries(trackedResults);
-      const width = 500;
-      const rowHeight = 40;
-      const headerHeight = 135;
-      const height = headerHeight + (items.length * rowHeight) + 80;
+      html2canvas(trackerPanel, {
+        useCORS: true,
+        scale: 2,
+        backgroundColor: '#FFFFFF'
+      }).then(canvas => {
+        // Restore styles
+        trackerList.style.maxHeight = originalMaxHeight;
+        trackerList.style.overflowY = originalOverflow;
 
-      canvas.width = width;
-      canvas.height = height;
-
-      // Background
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, width, height);
-
-      // Border
-      ctx.strokeStyle = '#4A90E2';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(10, 10, width - 20, height - 20);
-
-      // Title
-      ctx.fillStyle = '#4A90E2';
-      ctx.font = 'bold 20px "PingFang HK", "Microsoft JhengHei", sans-serif';
-      ctx.fillText('紀錄面板 (Data Tracker)', 30, 45);
-
-      // Name & Date
-      const today = new Date().toLocaleDateString('zh-HK');
-      ctx.fillStyle = '#2C3E50';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText(`學生名字 (Name): ${nameVal}`, 30, 75);
-
-      ctx.fillStyle = '#718096';
-      ctx.font = '14px sans-serif';
-      ctx.fillText(`日期 Date: ${today}`, 30, 98);
-
-      ctx.strokeStyle = '#E2E8F0';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(30, 110);
-      ctx.lineTo(width - 30, 110);
-      ctx.stroke();
-
-      // Items list
-      let y = 140;
-      items.forEach(([itemText, data]) => {
-        ctx.fillStyle = '#2C3E50';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(`• ${itemText}`, 30, y);
-
-        let statusText = '未紀錄 (N/A)';
-        let statusColor = '#A0AEC0';
-
-        if (data.status === true) {
-          statusText = '正確 (✓)';
-          statusColor = '#2ECC71';
-        } else if (data.status === false) {
-          statusText = '錯誤 (✗)';
-          statusColor = '#E74C3C';
-        }
-
-        ctx.fillStyle = statusColor;
-        ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(statusText, width - 150, y);
-
-        y += rowHeight;
+        const link = document.createElement('a');
+        const dateStr = new Date().toISOString().slice(0, 10);
+        link.download = `量詞學習紀錄_${name}_${dateStr}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(err => {
+        // Restore styles if error occurs
+        trackerList.style.maxHeight = originalMaxHeight;
+        trackerList.style.overflowY = originalOverflow;
+        alert('匯出圖片時發生錯誤，請稍後再試。');
       });
-
-      // Summary Box
-      ctx.strokeStyle = '#4A90E2';
-      ctx.strokeRect(30, y, width - 60, 50);
-
-      ctx.fillStyle = '#2C3E50';
-      ctx.font = 'bold 15px sans-serif';
-      ctx.fillText(summaryBox.innerText.replace('\n', ' - '), 40, y + 30);
-
-      // Download trigger
-      const link = document.createElement('a');
-      const safeName = nameVal.replace(/[/\\?%*:|"<>]/g, '');
-      link.download = `量詞紀錄_${safeName}_${today.replace(/\//g, '-')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
     }
   </script>
 </body>
