@@ -159,6 +159,7 @@
       border: 3px solid var(--primary);
     }
 
+    /* Green outline sustained state */
     .card.matched-highlight .card-front {
       border: 4px solid var(--secondary);
       box-shadow: 0 0 15px rgba(46, 204, 113, 0.8);
@@ -441,7 +442,7 @@
 
     let selectedClassifiers = [];
     let flippedCards = [];
-    let activeBlinkingCards = []; // Tracks currently blinking matched cards
+    let activeBlinkingCards = [];
     let activeBlinkInterval = null;
     let matchedPairsCount = 0;
     let totalPairs = 0;
@@ -591,7 +592,7 @@
       if (isBoardLocked) return;
       if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
 
-      // When player taps a new card, finalize any previously blinking matched cards
+      // When tapping a new card, flip the previously matched pair face-down
       stopActiveBlinking();
 
       card.classList.add('flipped');
@@ -612,12 +613,23 @@
 
         activeBlinkingCards = [card1, card2];
 
-        // START CONTINUOUS JS BLINKING (Sustains until next tap)
+        // BLINKS EXACTLY 3 TIMES (6 toggles), THEN STOPS BLINKING BUT KEEPS GREEN BORDER FACE UP
+        let blinkCount = 0;
         activeBlinkInterval = setInterval(() => {
           const currentOpacity = card1.style.opacity === '0.2' ? '1' : '0.2';
           card1.style.opacity = currentOpacity;
           card2.style.opacity = currentOpacity;
-        }, 300);
+          
+          blinkCount++;
+          if (blinkCount >= 6) { // 3 complete blinks
+            clearInterval(activeBlinkInterval);
+            activeBlinkInterval = null;
+            
+            // Ensure full opacity face-up with green border sustained!
+            card1.style.opacity = '1';
+            card2.style.opacity = '1';
+          }
+        }, 200);
 
         matchedPairsCount++;
         flippedCards = [];
