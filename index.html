@@ -162,12 +162,13 @@
       border-radius: 6px;
     }
 
+    /* Blink Animation while showing image face-up */
     @keyframes blink-success {
       0% { opacity: 1; transform: scale(1); }
       25% { opacity: 0.3; transform: scale(1.05); }
       50% { opacity: 1; transform: scale(1.05); }
       75% { opacity: 0.3; transform: scale(1.05); }
-      100% { opacity: 0.5; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     .card.blinking .card-inner {
@@ -175,9 +176,10 @@
       border: 3px solid var(--secondary);
     }
 
+    /* Completed state after flipping back upside down */
     .card.matched .card-inner {
-      opacity: 0.5;
-      border: 2px solid var(--secondary);
+      opacity: 0.4;
+      filter: grayscale(40%);
     }
 
     /* Tracker Panel */
@@ -586,14 +588,21 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
+        // 1. Keep cards face-up and start blinking animation
         card1.classList.add('blinking');
         card2.classList.add('blinking');
 
         setTimeout(() => {
+          // 2. Remove blinking class
           card1.classList.remove('blinking');
           card2.classList.remove('blinking');
+
+          // 3. Flip cards back upside down and apply matched dimmed style
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
           card1.classList.add('matched');
           card2.classList.add('matched');
+
           matchedPairsCount++;
           flippedCards = [];
           isBoardLocked = false;
@@ -601,8 +610,9 @@
           if (matchedPairsCount === totalPairs) {
             statusText.textContent = '🎉 完成所有配對！';
           }
-        }, 800);
+        }, 800); // Blinks face-up for 800ms before flipping back down
       } else {
+        // No match: Flip face-down after 1200ms
         setTimeout(() => {
           card1.classList.remove('flipped');
           card2.classList.remove('flipped');
@@ -713,7 +723,7 @@
       const today = new Date().toLocaleDateString('zh-HK');
       ctx.fillStyle = '#2C3E50';
       ctx.font = 'bold 15px sans-serif';
-      ctx.fillText(`名字 (Name): ${nameVal}`, 30, 75);
+      ctx.fillText(`學生名字 (Name): ${nameVal}`, 30, 75);
 
       ctx.fillStyle = '#718096';
       ctx.font = '14px sans-serif';
