@@ -113,6 +113,7 @@
       aspect-ratio: 1 / 1;
       perspective: 1000px;
       cursor: pointer;
+      transition: opacity 0.2s ease;
     }
 
     .card-inner {
@@ -120,7 +121,7 @@
       width: 100%;
       height: 100%;
       text-align: center;
-      transition: transform 0.5s ease-in-out;
+      transition: transform 0.4s ease-in-out;
       transform-style: preserve-3d;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -158,6 +159,11 @@
       border: 3px solid var(--primary);
     }
 
+    .card.matched-highlight .card-front {
+      border: 4px solid var(--secondary);
+      box-shadow: 0 0 15px rgba(46, 204, 113, 0.8);
+    }
+
     .card-img {
       width: 85%;
       height: 85%;
@@ -165,33 +171,7 @@
       border-radius: 6px;
     }
 
-    /* CLEAR FACE-UP BLINK ANIMATION */
-    @keyframes faceup-pulse-glow {
-      0% {
-        border-color: var(--secondary);
-        box-shadow: 0 0 0px var(--secondary);
-        transform: rotateY(180deg) scale(1);
-      }
-      50% {
-        border-color: var(--secondary);
-        box-shadow: 0 0 20px var(--secondary);
-        transform: rotateY(180deg) scale(1.08);
-        background-color: #E8F8F0;
-      }
-      100% {
-        border-color: var(--secondary);
-        box-shadow: 0 0 0px var(--secondary);
-        transform: rotateY(180deg) scale(1);
-      }
-    }
-
-    /* Applied directly to card-front while card stays face up */
-    .card.blinking .card-front {
-      animation: faceup-pulse-glow 0.8s ease-in-out infinite !important;
-      z-index: 20;
-    }
-
-    /* Final State: Locked upside-down and grayed out */
+    /* Dimmed face-down matched state */
     .card.matched .card-inner {
       opacity: 0.35;
       filter: grayscale(60%);
@@ -439,7 +419,7 @@
       ],
       '張': [
         { name: '紙巾', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjw8yn3qD8llFSs8T68GEk3lTROoyc6XCog_xggnlDgm3U5j1H0wrVkg-UZA8n2YA6dB181x4pB7dMvxBoorJ0U6WcHFIa_fyIsRRarCvHIqY62L_c1rW0LGp3y8WHcl9oIcPzAVcAw-zAL/s800/kagaku_kami_wesu.png' },
-        { name: '櫈', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiZyrTkpr3LoNifVcXZ21kESg4o984PFyR-WVLrUyHUOoLXkBbjiNtl2OlRysoFgobwpJtYIKp17LnIkZP0B20ZKQu5JrM7_x-6hqgg_O2CLSs9HYxUuHoreuD_g97UtwicKViAveI9hhER/s800/gakkou_isu_chair.png' },
+        { name: '櫈', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiZyrTkpr3LoNifVcXZ21kESg4o984PFyR-WVLrUyOoLXkBbjiNtl2OlRysoFgobwpJtYIKp17LnIkZP0B20ZKQu5JrM7_x-6hqgg_O2CLSs9HYxUuHoreuD_g97UtwicKViAveI9hhER/s800/gakkou_isu_chair.png' },
         { name: '床', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiIM6T9TDOABk07xBUqu_xfFycL4osB9ygEKpw7485Mk0BUNOiIX2wc3bhzEGNHD1rOkTN42FKLD90GmEsXfhLBOtJMubdK1qT7c8AcKLHpNJula5_9KWkbmWFhLaVaPGrHCz-1jnDdPw7Q/s800/kagu_bed.png' },
         { name: '枱', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWOaYMwF9Nct4uORLXFPwdVx0xd8PUM2TNs6JaG6YtofUJlJ8_wDDYd_13gCPkhzCfpW2MkntHSR7dhAZE3SQ4ktVCaqQGNnYB-YRwnP5CJnHUbYeJ619r_Cil8V9auE8gWSA6GNqpqWw5/s800/table_syoumen_white.png' },
         { name: '相片', img: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhzcs38vpsiVwrCt5rIYc0UZ_LhjTJBt3WKuv3nh_eJW0rY2gg_43BRRlLBSffbvvFGs-TvQYVLK4M5t9GbmmVbAKRRRfQ7GELib2iRJ43c-xy-h55SI9ME3Z9A6fUTatd5M5eV51Dm7lYD/s800/photo_omoide.png' },
@@ -588,7 +568,7 @@
 
     function handleCardClick(card) {
       if (isBoardLocked) return;
-      if (card.classList.contains('flipped') || card.classList.contains('matched') || card.classList.contains('blinking')) return;
+      if (card.classList.contains('flipped') || card.classList.contains('matched') || card.classList.contains('in-animation')) return;
 
       card.classList.add('flipped');
       flippedCards.push(card);
@@ -603,29 +583,42 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // STEP 1 & 2: START PULSE BLINKING IMMEDIATELY WHILE BOTH CARDS STAY FACE-UP
-        card1.classList.add('blinking');
-        card2.classList.add('blinking');
+        card1.classList.add('in-animation', 'matched-highlight');
+        card2.classList.add('in-animation', 'matched-highlight');
 
-        // STEP 3: Hold face-up & blinking for 2 full seconds so child can see both pictures clearly
-        setTimeout(() => {
-          card1.classList.remove('blinking');
-          card2.classList.remove('blinking');
+        // PURE JAVASCRIPT BLINKING (Guaranteed visibility over 3D transforms)
+        let blinkCount = 0;
+        const blinkInterval = setInterval(() => {
+          const currentOpacity = card1.style.opacity === '0.15' ? '1' : '0.15';
+          card1.style.opacity = currentOpacity;
+          card2.style.opacity = currentOpacity;
+          
+          blinkCount++;
+          if (blinkCount >= 6) { // Blinks 3 full times (on/off)
+            clearInterval(blinkInterval);
+            
+            // Restore full opacity face-up before flipping
+            card1.style.opacity = '1';
+            card2.style.opacity = '1';
 
-          // STEP 4: Rotate upside down and mark grayed-out matched state
-          card1.classList.remove('flipped');
-          card2.classList.remove('flipped');
-          card1.classList.add('matched');
-          card2.classList.add('matched');
+            // Flip both cards face-down into their matched/grayed state
+            setTimeout(() => {
+              card1.classList.remove('flipped', 'in-animation', 'matched-highlight');
+              card2.classList.remove('flipped', 'in-animation', 'matched-highlight');
+              
+              card1.classList.add('matched');
+              card2.classList.add('matched');
 
-          matchedPairsCount++;
-          flippedCards = [];
-          isBoardLocked = false;
+              matchedPairsCount++;
+              flippedCards = [];
+              isBoardLocked = false;
 
-          if (matchedPairsCount === totalPairs) {
-            statusText.textContent = '🎉 完成所有配對！';
+              if (matchedPairsCount === totalPairs) {
+                statusText.textContent = '🎉 完成所有配對！';
+              }
+            }, 200);
           }
-        }, 2000); // 2.0 Seconds total face-up celebration time
+        }, 200); // Toggles every 200ms
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
