@@ -415,7 +415,7 @@
   <!-- Game Board -->
   <div id="game-board" class="game-board hidden"></div>
 
-  <!-- FEATURE (2): Salient Victory Screen Modal Overlay -->
+  <!-- Salient Victory Screen Modal Overlay -->
   <div id="victory-overlay" class="victory-overlay hidden">
     <div class="victory-modal">
       <h2>🎉 完成所有配對！</h2>
@@ -658,7 +658,7 @@
       });
     }
 
-    // FEATURE (1): Turns active/previous matched cards face-down
+    // Turns active face-up matched cards face-down
     function finalizeActiveCards() {
       if (activeMatchedCards.length > 0) {
         activeMatchedCards.forEach(c => {
@@ -671,9 +671,28 @@
 
     function handleCardClick(card) {
       if (isBoardLocked) return;
+
+      // SPECIAL CASE: Tapping active face-up matched card(s)
+      if (activeMatchedCards.includes(card)) {
+        if (matchedPairsCount === totalPairs) {
+          // If this was the final pair on the board, highlight, flip face-down, and trigger victory!
+          isBoardLocked = true;
+          activeMatchedCards.forEach(c => c.classList.add('matched-highlight'));
+          setTimeout(() => {
+            finalizeActiveCards();
+            triggerVictory();
+            isBoardLocked = false;
+          }, 800);
+        } else {
+          // Normal pair tap: flip face-down
+          finalizeActiveCards();
+        }
+        return;
+      }
+
       if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
 
-      // When tapping a new card, turn previously matched cards face-down
+      // If tapping any other card, close previous active matched pair
       finalizeActiveCards();
 
       card.classList.add('flipped');
@@ -689,22 +708,15 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // Triggers gentle 2-blink animation
-        card1.classList.add('matched-highlight');
-        card2.classList.add('matched-highlight');
-
+        // Keeps the matched cards active & face-up
         activeMatchedCards = [card1, card2];
-
         matchedPairsCount++;
         flippedCards = [];
         isBoardLocked = false;
 
+        // Prompt user to tap either card to finalize
         if (matchedPairsCount === totalPairs) {
-          // Delay briefly to allow blink animation, then turn final pair face-down & trigger victory!
-          setTimeout(() => {
-            finalizeActiveCards(); // (1) Face-down final pair
-            triggerVictory();      // (2) Victory screen & (3) Confetti
-          }, 800);
+          statusText.textContent = '👆 請點擊最後一對卡牌完成遊戲！';
         }
       } else {
         // No match: Flip back upside down after 1.2s
@@ -720,10 +732,10 @@
     function triggerVictory() {
       statusText.textContent = '🎉 完成所有配對！';
       
-      // FEATURE (2): Show victory screen overlay
+      // Show salient victory screen modal
       victoryOverlay.classList.remove('hidden');
       
-      // FEATURE (3): Confetti cannon launch!
+      // Fire confetti cannon
       if (typeof confetti === 'function') {
         confetti({
           particleCount: 100,
