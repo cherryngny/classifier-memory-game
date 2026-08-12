@@ -6,6 +6,8 @@
   <title>Cantonese Classifier Memory Game - SLP Edition</title>
   <!-- html2canvas for exporting performance report as image -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- canvas-confetti for celebratory confetti animation -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     :root {
       --primary: #4A90E2;
@@ -168,7 +170,6 @@
     }
 
     .card.matched-highlight {
-      /* Runs for 0.4s x 2 = 0.8s total, then stops permanently */
       animation: gentle-blink-two-times 0.4s ease-in-out 2;
     }
 
@@ -188,6 +189,60 @@
     .card.matched .card-inner {
       opacity: 0.35;
       filter: grayscale(60%);
+    }
+
+    /* Completion Overlay Pop-up */
+    .victory-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .victory-modal {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 90%;
+      width: 400px;
+      animation: scaleUp 0.3s ease-out;
+    }
+
+    .victory-modal h2 {
+      color: var(--secondary);
+      font-size: 2.2rem;
+      margin: 0 0 10px 0;
+    }
+
+    .victory-modal p {
+      font-size: 1.2rem;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .victory-modal button {
+      background: var(--secondary);
+      font-size: 1.1rem;
+      padding: 12px 24px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.8); }
+      to { transform: scale(1); }
     }
 
     /* Tracker Panel */
@@ -353,6 +408,15 @@
   <!-- Game Board -->
   <div id="game-board" class="game-board hidden"></div>
 
+  <!-- Victory Overlay Modal -->
+  <div id="victory-overlay" class="victory-overlay hidden">
+    <div class="victory-modal">
+      <h2>🎉 完成所有配對！</h2>
+      <p>做得好！你已經順利完成所有量詞卡牌配對！</p>
+      <button onclick="closeVictoryOverlay()">確定 OK</button>
+    </div>
+  </div>
+
   <!-- Performance Tracker Panel -->
   <div id="tracker-panel" class="tracker-panel hidden">
     <div class="tracker-header">
@@ -471,6 +535,7 @@
     const resetBtn = document.getElementById('reset-btn');
     const exportImgBtn = document.getElementById('export-img-btn');
     const childNameInput = document.getElementById('child-name');
+    const victoryOverlay = document.getElementById('victory-overlay');
     const classifierBoxes = document.querySelectorAll('#classifier-options input');
 
     classifierBoxes.forEach(box => {
@@ -484,6 +549,7 @@
     startBtn.addEventListener('click', startGame);
     resetBtn.addEventListener('click', () => {
       finalizeActiveCards();
+      closeVictoryOverlay();
       gameBoard.classList.add('hidden');
       gameControls.classList.add('hidden');
       trackerPanel.classList.add('hidden');
@@ -494,6 +560,7 @@
 
     function startGame() {
       finalizeActiveCards();
+      closeVictoryOverlay();
       
       selectedClassifiers = Array.from(classifierBoxes)
         .filter(cb => cb.checked)
@@ -584,7 +651,7 @@
       });
     }
 
-    // Turns previous matched cards face-down when tapping a new card
+    // Turns previous matched cards face-down
     function finalizeActiveCards() {
       if (activeMatchedCards.length > 0) {
         activeMatchedCards.forEach(c => {
@@ -615,7 +682,7 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // Triggers gentle 2-blink animation and then sits steady with green border
+        // Triggers gentle 2-blink animation
         card1.classList.add('matched-highlight');
         card2.classList.add('matched-highlight');
 
@@ -626,7 +693,11 @@
         isBoardLocked = false;
 
         if (matchedPairsCount === totalPairs) {
-          statusText.textContent = '🎉 完成所有配對！';
+          // Delay briefly to allow the blink animation before turning final pair face-down & celebrating
+          setTimeout(() => {
+            finalizeActiveCards();
+            triggerVictory();
+          }, 800);
         }
       } else {
         // No match: Flip back upside down after 1.2s
@@ -637,6 +708,38 @@
           isBoardLocked = false;
         }, 1200);
       }
+    }
+
+    function triggerVictory() {
+      statusText.textContent = '🎉 完成所有配對！';
+      victoryOverlay.classList.remove('hidden');
+      
+      // Fire festive confetti blasts
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 }
+          });
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 }
+          });
+        }, 250);
+      }
+    }
+
+    function closeVictoryOverlay() {
+      victoryOverlay.classList.add('hidden');
     }
 
     function renderTracker(pool) {
