@@ -162,21 +162,21 @@
       border-radius: 6px;
     }
 
-    /* Keyframes animating opacity directly while face-up */
+    /* Keyframes for face-up blinking animation */
     @keyframes blink-image-faceup {
       0% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.25; transform: scale(1.05); }
+      50% { opacity: 0.2; transform: scale(1.05); }
       100% { opacity: 1; transform: scale(1); }
     }
 
-    /* Target card-front directly to guarantee picture visibility during extended blinking */
+    /* Target card-front directly to keep image strictly visible while blinking */
     .card.blinking .card-front {
-      animation: blink-image-faceup 1.2s ease-in-out infinite !important;
+      animation: blink-image-faceup 0.5s ease-in-out 2 !important;
       border: 3px solid var(--secondary);
       z-index: 10;
     }
 
-    /* Completed state after flipping back upside down */
+    /* Final State: Locked upside-down and greyed out slightly */
     .card.matched .card-inner {
       opacity: 0.4;
       filter: grayscale(40%);
@@ -588,29 +588,34 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // Blink face-up images
-        card1.classList.add('blinking');
-        card2.classList.add('blinking');
-
+        // STEP 1: Hold both cards steady and face-up for 1.5 seconds so the child sees them clearly
         setTimeout(() => {
-          // Finish blinking animation
-          card1.classList.remove('blinking');
-          card2.classList.remove('blinking');
+          
+          // STEP 2: Trigger blinking/pulsing while still face-up
+          card1.classList.add('blinking');
+          card2.classList.add('blinking');
 
-          // Flip both cards back upside down together
-          card1.classList.remove('flipped');
-          card2.classList.remove('flipped');
-          card1.classList.add('matched');
-          card2.classList.add('matched');
+          // STEP 3: After blinking for 1 second, turn both cards upside down to indicate they are matched
+          setTimeout(() => {
+            card1.classList.remove('blinking');
+            card2.classList.remove('blinking');
 
-          matchedPairsCount++;
-          flippedCards = [];
-          isBoardLocked = false;
+            // Flip upside down and apply matched transparent style
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            card1.classList.add('matched');
+            card2.classList.add('matched');
 
-          if (matchedPairsCount === totalPairs) {
-            statusText.textContent = '🎉 完成所有配對！';
-          }
-        }, 2500); // Extended display time to 2.5 seconds (2500ms)
+            matchedPairsCount++;
+            flippedCards = [];
+            isBoardLocked = false;
+
+            if (matchedPairsCount === totalPairs) {
+              statusText.textContent = '🎉 完成所有配對！';
+            }
+          }, 1000); // 1.0s blink duration
+
+        }, 1500); // 1.5s clear view duration
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
