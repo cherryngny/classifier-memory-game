@@ -441,6 +441,8 @@
 
     let selectedClassifiers = [];
     let flippedCards = [];
+    let activeBlinkingCards = []; // Tracks currently blinking matched cards
+    let activeBlinkInterval = null;
     let matchedPairsCount = 0;
     let totalPairs = 0;
     let isBoardLocked = false;
@@ -469,6 +471,7 @@
 
     startBtn.addEventListener('click', startGame);
     resetBtn.addEventListener('click', () => {
+      stopActiveBlinking();
       gameBoard.classList.add('hidden');
       gameControls.classList.add('hidden');
       trackerPanel.classList.add('hidden');
@@ -478,6 +481,8 @@
     exportImgBtn.addEventListener('click', exportTrackerAsImage);
 
     function startGame() {
+      stopActiveBlinking();
+      
       selectedClassifiers = Array.from(classifierBoxes)
         .filter(cb => cb.checked)
         .map(cb => cb.value);
@@ -534,6 +539,7 @@
       statusText.textContent = '';
       matchedPairsCount = 0;
       flippedCards = [];
+      activeBlinkingCards = [];
       isBoardLocked = false;
     }
 
@@ -566,9 +572,27 @@
       });
     }
 
+    function stopActiveBlinking() {
+      if (activeBlinkInterval) {
+        clearInterval(activeBlinkInterval);
+        activeBlinkInterval = null;
+      }
+      if (activeBlinkingCards.length > 0) {
+        activeBlinkingCards.forEach(c => {
+          c.style.opacity = '1';
+          c.classList.remove('flipped', 'matched-highlight');
+          c.classList.add('matched');
+        });
+        activeBlinkingCards = [];
+      }
+    }
+
     function handleCardClick(card) {
       if (isBoardLocked) return;
-      if (card.classList.contains('flipped') || card.classList.contains('matched') || card.classList.contains('in-animation')) return;
+      if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+      // When player taps a new card, finalize any previously blinking matched cards
+      stopActiveBlinking();
 
       card.classList.add('flipped');
       flippedCards.push(card);
@@ -583,42 +607,25 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        card1.classList.add('in-animation', 'matched-highlight');
-        card2.classList.add('in-animation', 'matched-highlight');
+        card1.classList.add('matched-highlight');
+        card2.classList.add('matched-highlight');
 
-        // PURE JAVASCRIPT BLINKING (Guaranteed visibility over 3D transforms)
-        let blinkCount = 0;
-        const blinkInterval = setInterval(() => {
-          const currentOpacity = card1.style.opacity === '0.15' ? '1' : '0.15';
+        activeBlinkingCards = [card1, card2];
+
+        // START CONTINUOUS JS BLINKING (Sustains until next tap)
+        activeBlinkInterval = setInterval(() => {
+          const currentOpacity = card1.style.opacity === '0.2' ? '1' : '0.2';
           card1.style.opacity = currentOpacity;
           card2.style.opacity = currentOpacity;
-          
-          blinkCount++;
-          if (blinkCount >= 6) { // Blinks 3 full times (on/off)
-            clearInterval(blinkInterval);
-            
-            // Restore full opacity face-up before flipping
-            card1.style.opacity = '1';
-            card2.style.opacity = '1';
+        }, 300);
 
-            // Flip both cards face-down into their matched/grayed state
-            setTimeout(() => {
-              card1.classList.remove('flipped', 'in-animation', 'matched-highlight');
-              card2.classList.remove('flipped', 'in-animation', 'matched-highlight');
-              
-              card1.classList.add('matched');
-              card2.classList.add('matched');
+        matchedPairsCount++;
+        flippedCards = [];
+        isBoardLocked = false;
 
-              matchedPairsCount++;
-              flippedCards = [];
-              isBoardLocked = false;
-
-              if (matchedPairsCount === totalPairs) {
-                statusText.textContent = '🎉 完成所有配對！';
-              }
-            }, 200);
-          }
-        }, 200); // Toggles every 200ms
+        if (matchedPairsCount === totalPairs) {
+          statusText.textContent = '🎉 完成所有配對！';
+        }
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
