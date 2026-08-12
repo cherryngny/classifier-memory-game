@@ -120,19 +120,22 @@
       width: 100%;
       height: 100%;
       text-align: center;
-      transition: transform 0.5s;
+      transition: transform 0.5s ease-in-out;
       transform-style: preserve-3d;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
-    .card.flipped .card-inner { transform: rotateY(180deg); }
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
 
     .card-front, .card-back {
       position: absolute;
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
       border-radius: 12px;
       display: flex;
       flex-direction: column;
@@ -152,7 +155,7 @@
     .card-front {
       background: var(--card-bg);
       transform: rotateY(180deg);
-      border: 2px solid var(--primary);
+      border: 3px solid var(--primary);
     }
 
     .card-img {
@@ -162,25 +165,36 @@
       border-radius: 6px;
     }
 
-    /* Keyframes for face-up blinking animation */
-    @keyframes blink-image-faceup {
-      0% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.15; transform: scale(1.06); }
-      100% { opacity: 1; transform: scale(1); }
+    /* CLEAR FACE-UP BLINK ANIMATION */
+    @keyframes faceup-pulse-glow {
+      0% {
+        border-color: var(--secondary);
+        box-shadow: 0 0 0px var(--secondary);
+        transform: rotateY(180deg) scale(1);
+      }
+      50% {
+        border-color: var(--secondary);
+        box-shadow: 0 0 20px var(--secondary);
+        transform: rotateY(180deg) scale(1.08);
+        background-color: #E8F8F0;
+      }
+      100% {
+        border-color: var(--secondary);
+        box-shadow: 0 0 0px var(--secondary);
+        transform: rotateY(180deg) scale(1);
+      }
     }
 
-    /* Target card-front directly so image remains strictly face-up during blinking */
+    /* Applied directly to card-front while card stays face up */
     .card.blinking .card-front {
-      animation: blink-image-faceup 0.6s ease-in-out infinite !important;
-      border: 4px solid var(--secondary);
-      box-shadow: 0 0 12px rgba(46, 204, 113, 0.6);
-      z-index: 10;
+      animation: faceup-pulse-glow 0.8s ease-in-out infinite !important;
+      z-index: 20;
     }
 
-    /* Final State: Locked upside-down and greyed out slightly */
+    /* Final State: Locked upside-down and grayed out */
     .card.matched .card-inner {
-      opacity: 0.4;
-      filter: grayscale(40%);
+      opacity: 0.35;
+      filter: grayscale(60%);
     }
 
     /* Tracker Panel */
@@ -589,16 +603,16 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // BOTH CARDS START BLINKING IMMEDIATELY WHILE FACE-UP
+        // STEP 1 & 2: START PULSE BLINKING IMMEDIATELY WHILE BOTH CARDS STAY FACE-UP
         card1.classList.add('blinking');
         card2.classList.add('blinking');
 
-        // Blinks face-up for exactly 1.8 seconds so the child can clearly see the pictures
+        // STEP 3: Hold face-up & blinking for 2 full seconds so child can see both pictures clearly
         setTimeout(() => {
           card1.classList.remove('blinking');
           card2.classList.remove('blinking');
 
-          // Flip both cards upside down to complete the match
+          // STEP 4: Rotate upside down and mark grayed-out matched state
           card1.classList.remove('flipped');
           card2.classList.remove('flipped');
           card1.classList.add('matched');
@@ -611,7 +625,7 @@
           if (matchedPairsCount === totalPairs) {
             statusText.textContent = '🎉 完成所有配對！';
           }
-        }, 1800); // 1.8 seconds total face-up blinking duration
+        }, 2000); // 2.0 Seconds total face-up celebration time
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
