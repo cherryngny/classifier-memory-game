@@ -162,7 +162,7 @@
       border-radius: 6px;
     }
 
-    /* Blink Animation while showing image face-up */
+    /* Blink Animation while showing both images face-up */
     @keyframes blink-success {
       0% { opacity: 1; transform: scale(1); }
       25% { opacity: 0.3; transform: scale(1.05); }
@@ -588,16 +588,16 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // 1. Keep cards face-up and start blinking animation
-        card1.classList.add('blinking');
-        card2.classList.add('blinking');
+        // Keep BOTH cards explicitly face-up while blinking
+        card1.classList.add('flipped', 'blinking');
+        card2.classList.add('flipped', 'blinking');
 
         setTimeout(() => {
-          // 2. Remove blinking class
+          // Remove blinking class
           card1.classList.remove('blinking');
           card2.classList.remove('blinking');
 
-          // 3. Flip cards back upside down and apply matched dimmed style
+          // Flip BOTH cards back upside down together
           card1.classList.remove('flipped');
           card2.classList.remove('flipped');
           card1.classList.add('matched');
@@ -610,9 +610,9 @@
           if (matchedPairsCount === totalPairs) {
             statusText.textContent = '🎉 完成所有配對！';
           }
-        }, 800); // Blinks face-up for 800ms before flipping back down
+        }, 800);
       } else {
-        // No match: Flip face-down after 1200ms
+        // No match: Flip back face-down after 1.2s
         setTimeout(() => {
           card1.classList.remove('flipped');
           card2.classList.remove('flipped');
