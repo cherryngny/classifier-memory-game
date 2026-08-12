@@ -588,14 +588,14 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // STEP 1: Hold both cards steady and face-up for 1.5 seconds so the child sees them clearly
+        // STEP 1: Hold both cards completely still face-up for 3 full seconds (3000ms)
         setTimeout(() => {
           
           // STEP 2: Trigger blinking/pulsing while still face-up
           card1.classList.add('blinking');
           card2.classList.add('blinking');
 
-          // STEP 3: After blinking for 1 second, turn both cards upside down to indicate they are matched
+          // STEP 3: After 1 second of blinking, flip both cards upside down to complete match
           setTimeout(() => {
             card1.classList.remove('blinking');
             card2.classList.remove('blinking');
@@ -615,7 +615,7 @@
             }
           }, 1000); // 1.0s blink duration
 
-        }, 1500); // 1.5s clear view duration
+        }, 3000); // 3.0s clear view duration
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
