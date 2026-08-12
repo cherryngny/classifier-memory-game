@@ -165,15 +165,13 @@
     /* Keyframes animating opacity directly while face-up */
     @keyframes blink-image-faceup {
       0% { opacity: 1; transform: scale(1); }
-      25% { opacity: 0.15; transform: scale(1.05); }
-      50% { opacity: 1; transform: scale(1.05); }
-      75% { opacity: 0.15; transform: scale(1.05); }
+      50% { opacity: 0.25; transform: scale(1.05); }
       100% { opacity: 1; transform: scale(1); }
     }
 
-    /* Target card-front directly to guarantee picture visibility during blinking */
+    /* Target card-front directly to guarantee picture visibility during extended blinking */
     .card.blinking .card-front {
-      animation: blink-image-faceup 1s ease-in-out forwards !important;
+      animation: blink-image-faceup 1.2s ease-in-out infinite !important;
       border: 3px solid var(--secondary);
       z-index: 10;
     }
@@ -612,7 +610,7 @@
           if (matchedPairsCount === totalPairs) {
             statusText.textContent = '🎉 完成所有配對！';
           }
-        }, 1000); // 1.0 second duration for blinking face-up
+        }, 2500); // Extended display time to 2.5 seconds (2500ms)
       } else {
         // No match: Flip back upside down after 1.2s
         setTimeout(() => {
