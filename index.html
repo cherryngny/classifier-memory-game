@@ -156,22 +156,23 @@
       background: var(--card-bg);
       transform: rotateY(180deg);
       border: 3px solid var(--primary);
+      transition: border 0.2s ease, box-shadow 0.2s ease;
     }
 
-    /* GENTLE 3-TIMES BLINK ANIMATION */
-    @keyframes gentle-blink-three-times {
+    /* GENTLE 2-TIMES BLINK ANIMATION */
+    @keyframes gentle-blink-two-times {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
+      50% { opacity: 0.25; }
     }
 
     .card.matched-highlight {
-      /* Animation runs 3 times (0.4s each = 1.2s total), then STOPS automatically */
-      animation: gentle-blink-three-times 0.4s ease-in-out 3;
+      /* Runs for 0.4s x 2 = 0.8s total, then stops permanently */
+      animation: gentle-blink-two-times 0.4s ease-in-out 2;
     }
 
     .card.matched-highlight .card-front {
       border: 4px solid var(--secondary);
-      box-shadow: 0 0 15px rgba(46, 204, 113, 0.8);
+      box-shadow: 0 0 18px rgba(46, 204, 113, 0.9);
     }
 
     .card-img {
@@ -451,7 +452,7 @@
 
     let selectedClassifiers = [];
     let flippedCards = [];
-    let activeBlinkingCards = [];
+    let activeMatchedCards = [];
     let matchedPairsCount = 0;
     let totalPairs = 0;
     let isBoardLocked = false;
@@ -548,7 +549,7 @@
       statusText.textContent = '';
       matchedPairsCount = 0;
       flippedCards = [];
-      activeBlinkingCards = [];
+      activeMatchedCards = [];
       isBoardLocked = false;
     }
 
@@ -581,14 +582,14 @@
       });
     }
 
-    // Turns previous matched cards upside-down when tapping a new card
+    // Turns previous matched cards face-down when tapping a new card
     function finalizeActiveCards() {
-      if (activeBlinkingCards.length > 0) {
-        activeBlinkingCards.forEach(c => {
+      if (activeMatchedCards.length > 0) {
+        activeMatchedCards.forEach(c => {
           c.classList.remove('flipped', 'matched-highlight');
           c.classList.add('matched');
         });
-        activeBlinkingCards = [];
+        activeMatchedCards = [];
       }
     }
 
@@ -612,11 +613,11 @@
       const [card1, card2] = flippedCards;
 
       if (card1.dataset.fullText === card2.dataset.fullText) {
-        // Add green highlight + 3-times blinking animation trigger
+        // Triggers gentle 2-blink animation and then sits steady with green border
         card1.classList.add('matched-highlight');
         card2.classList.add('matched-highlight');
 
-        activeBlinkingCards = [card1, card2];
+        activeMatchedCards = [card1, card2];
 
         matchedPairsCount++;
         flippedCards = [];
