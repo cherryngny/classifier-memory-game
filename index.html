@@ -163,7 +163,7 @@
       transition: border 0.2s ease, box-shadow 0.2s ease;
     }
 
-    /* GENTLE 2-TIMES BLINK ANIMATION */
+    /* GENTLE 2-TIMES BLINK ANIMATION & GREEN HIGHLIGHT */
     @keyframes gentle-blink-two-times {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.25; }
@@ -173,9 +173,10 @@
       animation: gentle-blink-two-times 0.4s ease-in-out 2;
     }
 
-    .card.matched-highlight .card-front {
-      border: 4px solid var(--secondary);
-      box-shadow: 0 0 18px rgba(46, 204, 113, 0.9);
+    .card.matched-highlight .card-front,
+    .card.matched .card-front {
+      border: 4px solid var(--secondary) !important;
+      box-shadow: 0 0 14px rgba(46, 204, 113, 0.8) !important;
     }
 
     .card-img {
@@ -442,7 +443,7 @@
 
   <script>
     const itemsDatabase = {
-   '個': [
+      '個': [
         { name: '蘋果', prefix: '一', img: '1.png' },
         { name: '橙', prefix: '一', img: '2.png' },
         { name: '蛋糕', prefix: '一', img: '3.png' },
@@ -713,6 +714,11 @@
         activeMatchedCards = [card1, card2];
         matchedPairsCount++;
         flippedCards = [];
+
+        // Instantly add short blinking effect and green border highlighting to matched cards
+        card1.classList.add('matched-highlight');
+        card2.classList.add('matched-highlight');
+
         isBoardLocked = false;
 
         // Prompt user to tap either card to finalize
